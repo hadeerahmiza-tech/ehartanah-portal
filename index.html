@@ -4,229 +4,377 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Log Masuk — e-Hartanah Portal</title>
-  <link rel="stylesheet" href="css/styles.css">
   <style>
-    /* login-v2: full-height split — right side card on white, left bg on desktop */
-    body { margin:0; background:#f8fafc; min-height:100vh; }
+    /* corrad base tokens — theme.css */
+    :root {
+      --color-primary: 13, 27, 42;
+      --bg-1: 243, 244, 246;
+      --bg-2: 255, 255, 255;
+      --border-color: 228, 228, 231;
+      --fk-border-color: 228, 228, 231;
+      --fk-placeholder-color: 146, 146, 153;
+      --rounded-box: 0.2rem;
+      --rounded-btn: 0.2rem;
+      --box-shadow: rgba(36,35,71,0.05) 0px 1px 1px, rgba(36,35,71,0.05) 0px 0px 1px 1px;
+    }
 
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      color: rgb(var(--color-primary));
+      background: rgb(var(--bg-1));
+      min-height: 100vh;
+    }
+
+    /* flex-none md:flex justify-center text-center items-center h-screen */
     .login-wrap {
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-    }
-    @media (min-width:768px) {
-      .login-wrap { justify-content: center; }
+      text-align: center;
     }
 
-    /* rs-card style from corrad: rounded-xl border border-slate-200 bg-white shadow-sm */
-    .login-card {
+    /* w-full md:w-3/4 lg:w-1/2 xl:w-2/6 */
+    .login-col {
       width: 100%;
-      max-width: 440px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 48px 56px 56px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-    }
-    @media (max-width:600px) {
-      .login-card { padding: 32px 24px 40px; border-radius: 0; border-left:none; border-right:none; min-height:100vh; display:flex; flex-direction:column; justify-content:center; }
+      max-width: 420px;
+      padding: 16px;
     }
 
-    /* h3 from corrad typography */
-    .login-card h3 {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #0f172a;
+    /* rs-card: h-screen md:h-auto px-10 md:px-16 py-12 md:py-20 mb-0 */
+    .rs-card {
+      background: rgb(var(--bg-2));
+      border-radius: var(--rounded-box);
+      box-shadow: var(--box-shadow);
+      padding: 48px 64px 80px;
+      text-align: left;
+      border: 1px solid rgba(var(--border-color), 0.8);
+    }
+    @media (max-width: 600px) {
+      .rs-card {
+        min-height: 100vh;
+        border-radius: 0;
+        padding: 48px 40px 64px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+    }
+
+    /* h3 — corrad typography */
+    .rs-card h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: rgb(var(--color-primary));
       margin: 0 0 8px;
-      letter-spacing: -0.02em;
+      text-align: left;
     }
-    .login-card .sub {
+    .rs-card > p {
       font-size: 0.875rem;
-      color: #64748b;
-      margin: 0 0 28px;
+      color: #6b7280;
+      margin: 0 0 24px;
+      text-align: left;
     }
 
-    /* FormKit-style labels */
+    /* grid grid-cols-2 */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+
+    /* FormKit outer wrapper — col-span-2 */
+    .fk-outer {
+      grid-column: 1 / -1;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    /* FormKit label — text-sm font-semibold */
     .fk-label {
       display: block;
       font-size: 0.875rem;
-      font-weight: 500;
-      color: #334155;
-      margin-bottom: 5px;
+      font-weight: 600;
+      color: rgb(var(--color-primary));
+      margin-bottom: 4px;
     }
-    /* FormKit-style inputs — matches corrad FormKit styling */
+    /* FormKit inner — border border-[fk-border-color] rounded-lg focus-within:border-primary */
+    .fk-inner {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      border: 1px solid rgb(var(--fk-border-color));
+      border-radius: 0.5rem; /* rounded-lg */
+      overflow: hidden;
+      background: rgb(var(--bg-2));
+      transition: border-color 0.15s;
+    }
+    .fk-inner:focus-within {
+      border-color: rgb(var(--color-primary));
+    }
+    /* FormKit input — h-10 px-3 text-sm */
     .fk-input {
       width: 100%;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 9px 12px;
-      font-size: 0.875rem;
-      color: #0f172a;
-      background: #fff;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      height: 40px; /* h-10 */
+      padding: 0 12px;
+      border: none;
       outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-      box-sizing: border-box;
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: rgb(var(--color-primary));
+      background: transparent;
     }
-    .fk-input:focus {
-      border-color: var(--accent-500, #8b5cf6);
-      box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
-    }
-    .fk-input::placeholder { color: #94a3b8; }
+    .fk-input::placeholder { color: rgb(var(--fk-placeholder-color)); }
 
-    .fk-select {
-      appearance: none;
-      padding-right: 32px;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%2394a3b8' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      cursor: pointer;
-    }
-
-    /* FormKit button — bg-primary w-full */
+    /* FormKit button — w-full col-span-2 */
     .fk-btn {
+      grid-column: 1 / -1;
       width: 100%;
-      background: var(--accent-600, #7c3aed);
+      height: 40px;
+      background: rgb(var(--color-primary));
       color: #fff;
       border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
+      border-radius: var(--rounded-btn);
       font-size: 0.875rem;
       font-weight: 500;
+      font-family: inherit;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: background 0.15s;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+      transition: opacity 0.15s;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
     }
-    .fk-btn:hover { background: var(--accent-700, #6d28d9); }
-    .fk-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .fk-btn:hover { opacity: 0.88; }
+    .fk-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* Google button — !bg-white !text-inherit shadow-md */
+    /* rs-button !bg-white !text-inherit shadow-md col-span-2 */
     .google-btn {
+      grid-column: 1 / -1;
       width: 100%;
+      height: 40px;
       background: #fff;
-      color: #334155;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 9px 16px;
+      color: rgb(var(--color-primary));
+      border: 1px solid rgb(var(--border-color));
+      border-radius: var(--rounded-btn);
       font-size: 0.875rem;
       font-weight: 500;
+      font-family: inherit;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: background 0.15s, box-shadow 0.15s;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-      margin-top: 10px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+      transition: box-shadow 0.15s;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
-    .google-btn:hover { background: #f8fafc; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+    .google-btn:hover { box-shadow: 0 6px 12px -2px rgba(0,0,0,0.1); }
 
-    .role-chip {
-      padding: 3px 10px; border-radius: 99px; font-size: 0.72rem; font-weight: 500;
-      background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;
-      cursor: pointer; transition: all 0.12s;
+    /* Remember Me checkbox */
+    .remember-col {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 40px;
+      font-size: 0.875rem;
+      margin-bottom: 16px;
     }
-    .role-chip:hover { background: var(--accent-50,#f5f3ff); border-color: var(--accent-200,#ddd6fe); color: var(--accent-700,#6d28d9); }
-
-    /* Remember Me checkbox row */
-    .check-row {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 0.875rem; color: #475569;
-    }
-    .check-row input[type=checkbox] {
+    .remember-col input[type=checkbox] {
       width: 16px; height: 16px; cursor: pointer;
-      accent-color: var(--accent-600, #7c3aed);
+      accent-color: rgb(var(--color-primary));
     }
+
+    /* Forgot Password — flex items-center justify-end h-5 mt-1 text-primary */
+    .forgot-col {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      height: 40px;
+      font-size: 0.875rem;
+      margin-bottom: 16px;
+    }
+    .forgot-col a {
+      color: rgb(var(--color-primary));
+      text-decoration: none;
+      font-size: 0.8rem;
+    }
+    .forgot-col a:hover { text-decoration: underline; }
 
     /* Error box */
     .err-box {
-      display: none; margin-bottom: 16px; padding: 10px 14px;
-      background: #fdf2f2; border: 1px solid #fecaca; border-radius: 8px;
-      align-items: center; gap: 8px; font-size: 0.82rem; color: #991b1b;
+      margin-bottom: 16px;
+      padding: 10px 14px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 0.4rem;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: #991b1b;
+      text-align: left;
     }
 
-    @keyframes fadeUp { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
-    @keyframes spin { to { transform:rotate(360deg); } }
-    .login-card { animation: fadeUp 0.35s ease-out both; }
+    /* Demo credentials table */
+    .demo-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      margin-bottom: 20px;
+      border: 1px solid rgb(var(--border-color));
+      border-radius: 0.4rem;
+      overflow: hidden;
+    }
+    .demo-table thead th {
+      background: rgb(var(--bg-1));
+      padding: 6px 10px;
+      text-align: left;
+      font-weight: 600;
+      color: #6b7280;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid rgb(var(--border-color));
+    }
+    .demo-table tbody td {
+      padding: 6px 10px;
+      border-bottom: 1px solid rgb(var(--bg-1));
+      color: rgb(var(--color-primary));
+      vertical-align: middle;
+    }
+    .demo-table tbody tr:last-child td { border-bottom: none; }
+    .demo-table tbody tr { cursor: pointer; transition: background 0.1s; }
+    .demo-table tbody tr:hover { background: rgb(var(--bg-1)); }
+    .demo-table .mono {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.72rem;
+      background: rgb(var(--bg-1));
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: #374151;
+    }
+
+    /* Sign up link */
+    .signup-row {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+    .signup-row a { color: rgb(var(--color-primary)); text-decoration: none; }
+    .signup-row a:hover { text-decoration: underline; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
+<!-- flex-none md:flex justify-center text-center items-center h-screen -->
 <div class="login-wrap">
-  <!-- login-v2 card — md:w-3/4 lg:w-1/2 xl:w-2/6 (max-w-440) -->
-  <div class="login-card">
+  <!-- w-full md:w-3/4 lg:w-1/2 xl:w-2/6 -->
+  <div class="login-col">
 
-    <!-- h3 + subtitle matching login-v2.vue -->
-    <h3>Log Masuk</h3>
-    <p class="sub">Selamat datang ke e-Hartanah Portal. Sila log masuk untuk teruskan.</p>
+    <!-- rs-card h-screen md:h-auto px-10 md:px-16 py-12 md:py-20 mb-0 -->
+    <div class="rs-card">
 
-    <!-- Error box -->
-    <div class="err-box" id="err" style="display:none;">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-      <span id="err-msg">Sila isi semua maklumat.</span>
-    </div>
+      <!-- h3 + subtitle -->
+      <h3>Log Masuk</h3>
+      <p>Selamat datang ke e-Hartanah Portal. Sila log masuk untuk teruskan.</p>
 
-    <form onsubmit="doLogin(event)">
-      <!-- grid grid-cols-2 (col-span-2 for each field) -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+      <!-- Demo credentials — click to auto-fill -->
+      <div style="margin-bottom:18px;">
+        <p style="font-size:0.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 6px;">Akaun Demo — klik untuk isi automatik</p>
+        <table class="demo-table">
+          <thead>
+            <tr>
+              <th>Peranan</th>
+              <th>ID Pengguna</th>
+              <th>Kata Laluan</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr onclick="fillCredentials('tanah@ehartanah.gov.my','tanah1234','Unit Tanah')">
+              <td>Unit Tanah</td>
+              <td><span class="mono">tanah@ehartanah.gov.my</span></td>
+              <td><span class="mono">tanah1234</span></td>
+            </tr>
+            <tr onclick="fillCredentials('fasiliti@ehartanah.gov.my','fasiliti1234','Unit Fasiliti')">
+              <td>Unit Fasiliti</td>
+              <td><span class="mono">fasiliti@ehartanah.gov.my</span></td>
+              <td><span class="mono">fasiliti1234</span></td>
+            </tr>
+            <tr onclick="fillCredentials('pajakan@ehartanah.gov.my','pajakan1234','Unit Pajakan')">
+              <td>Unit Pajakan</td>
+              <td><span class="mono">pajakan@ehartanah.gov.my</span></td>
+              <td><span class="mono">pajakan1234</span></td>
+            </tr>
+            <tr onclick="fillCredentials('kewangan@ehartanah.gov.my','kewangan1234','Kewangan')">
+              <td>Kewangan</td>
+              <td><span class="mono">kewangan@ehartanah.gov.my</span></td>
+              <td><span class="mono">kewangan1234</span></td>
+            </tr>
+            <tr onclick="fillCredentials('undang@ehartanah.gov.my','undang1234','Undang-undang')">
+              <td>Undang-undang</td>
+              <td><span class="mono">undang@ehartanah.gov.my</span></td>
+              <td><span class="mono">undang1234</span></td>
+            </tr>
+            <tr onclick="fillCredentials('admin@ehartanah.gov.my','admin1234','Admin')">
+              <td>Admin</td>
+              <td><span class="mono">admin@ehartanah.gov.my</span></td>
+              <td><span class="mono">admin1234</span></td>
+            </tr>
+            <tr onclick="fillCredentials('pengarah@ehartanah.gov.my','pengarah1234','Pengurusan')">
+              <td>Pengarah</td>
+              <td><span class="mono">pengarah@ehartanah.gov.my</span></td>
+              <td><span class="mono">pengarah1234</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-        <!-- Username — col-span-2 -->
-        <div style="grid-column:1/-1;margin-bottom:16px;">
-          <label class="fk-label">Nama Pengguna / E-mel</label>
-          <input id="email" class="fk-input" type="text" placeholder="contoh: ahmad@gov.my" value="ahmad.faizal@gov.my" autocomplete="username">
-        </div>
+      <!-- Error box -->
+      <div class="err-box" id="err">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <span id="err-msg">Sila isi semua maklumat.</span>
+      </div>
 
-        <!-- Password — col-span-2 -->
-        <div style="grid-column:1/-1;margin-bottom:16px;">
-          <label class="fk-label">Kata Laluan</label>
-          <input id="password" class="fk-input" type="password" placeholder="••••••••" value="demo1234" autocomplete="current-password">
-        </div>
+      <form onsubmit="doLogin(event)">
+        <!-- grid grid-cols-2 -->
+        <div class="form-grid">
 
-        <!-- Unit/Role — col-span-2 -->
-        <div style="grid-column:1/-1;margin-bottom:16px;">
-          <label class="fk-label">Unit / Peranan</label>
-          <select id="role" class="fk-input fk-select">
-            <option value="">— Pilih unit —</option>
-            <optgroup label="Unit Pengurusan">
-              <option value="Unit Tanah">Unit Tanah</option>
-              <option value="Unit Fasiliti">Unit Fasiliti</option>
-              <option value="Unit Pajakan">Unit Pajakan</option>
-            </optgroup>
-            <optgroup label="Pentadbiran & Sokongan">
-              <option value="Kewangan" selected>Kewangan</option>
-              <option value="Undang-undang">Undang-undang</option>
-              <option value="Admin">Admin</option>
-            </optgroup>
-            <optgroup label="Pengurusan Atasan">
-              <option value="Pengurusan">Pengurusan / Pengarah</option>
-            </optgroup>
-          </select>
-          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;">
-            <span class="role-chip" onclick="setRole('Unit Tanah')">Unit Tanah</span>
-            <span class="role-chip" onclick="setRole('Unit Pajakan')">Unit Pajakan</span>
-            <span class="role-chip" onclick="setRole('Kewangan')">Kewangan</span>
-            <span class="role-chip" onclick="setRole('Admin')">Admin</span>
-            <span class="role-chip" onclick="setRole('Pengurusan')">Pengurusan</span>
+          <!-- Username — outer-class="col-span-2" label-class="text-left" -->
+          <div class="fk-outer">
+            <label class="fk-label" for="email">Nama Pengguna</label>
+            <div class="fk-inner">
+              <input id="email" class="fk-input" type="text" placeholder="contoh: kewangan@ehartanah.gov.my" autocomplete="username">
+            </div>
           </div>
-        </div>
 
-        <!-- Remember Me + Forgot Password row -->
-        <div style="display:flex;align-items:center;margin-bottom:20px;">
-          <label class="check-row">
-            <input type="checkbox" id="remember"> Ingat saya
-          </label>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:20px;">
-          <a href="#" style="font-size:0.875rem;color:var(--accent-600,#7c3aed);" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Lupa kata laluan?</a>
-        </div>
+          <!-- Password — col-span-2 -->
+          <div class="fk-outer">
+            <label class="fk-label" for="password">Kata Laluan</label>
+            <div class="fk-inner">
+              <input id="password" class="fk-input" type="password" placeholder="••••••••" autocomplete="current-password">
+            </div>
+          </div>
 
-        <!-- Sign In button — col-span-2 -->
-        <div style="grid-column:1/-1;">
+          <!-- Remember Me (left col) + Forgot Password (right col, justify-end) -->
+          <div class="remember-col">
+            <input type="checkbox" id="remember">
+            <label for="remember" style="cursor:pointer;">Ingat saya</label>
+          </div>
+          <div class="forgot-col">
+            <a href="#">Lupa kata laluan?</a>
+          </div>
+
+          <!-- Sign In button — col-span-2 -->
           <button type="submit" class="fk-btn" id="submit-btn">
             <span id="btn-label">Log Masuk</span>
             <span id="btn-loading" style="display:none;align-items:center;gap:8px;">
@@ -234,63 +382,86 @@
               Sedang log masuk...
             </span>
           </button>
+
+          <!-- Google button — rs-button !bg-white !text-inherit shadow-md -->
+          <button type="button" class="google-btn" onclick="alert('Google Sign-In tidak tersedia dalam mod demo.')">
+            <svg width="18" height="18" viewBox="0 0 48 48">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Log Masuk dengan Google
+          </button>
+
         </div>
+      </form>
 
-      </div>
-    </form>
+      <!-- Don't have an account? Sign Up -->
+      <p class="signup-row">
+        Belum ada akaun?
+        <a href="#">Daftar</a>
+      </p>
 
-    <!-- Sign In with Google — rs-button !bg-white shadow-md -->
-    <button class="google-btn" onclick="showToast && showToast('Google Sign-In tidak tersedia dalam mod demo.','info')">
-      <!-- Google logo SVG -->
-      <svg width="18" height="18" viewBox="0 0 48 48">
-        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-      </svg>
-      Log Masuk dengan Google
-    </button>
-
-    <!-- Don't have an account -->
-    <p style="margin-top:20px;text-align:center;font-size:0.875rem;color:#64748b;">
-      Belum ada akaun?
-      <a href="#" style="color:var(--accent-600,#7c3aed);" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Daftar</a>
-    </p>
-
+    </div><!-- /rs-card -->
   </div>
 </div>
 
-<!-- Footer -->
-<p style="position:fixed;bottom:16px;width:100%;text-align:center;font-size:11px;color:#94a3b8;line-height:1.6;pointer-events:none;">
-  &copy; 2026 e-Hartanah Portal — Kementerian Kewangan Malaysia &nbsp;·&nbsp;
-  <span style="color:#cbd5e1;">Demo Mode</span>
-</p>
-
 <script>
-  function setRole(r) { document.getElementById('role').value = r; }
+  /* Role map — derive role from email prefix */
+  const ROLE_MAP = {
+    'tanah':     'Unit Tanah',
+    'fasiliti':  'Unit Fasiliti',
+    'pajakan':   'Unit Pajakan',
+    'kewangan':  'Kewangan',
+    'undang':    'Undang-undang',
+    'admin':     'Admin',
+    'pengarah':  'Pengurusan',
+  };
+
+  const DISPLAY_NAMES = {
+    'Unit Tanah':     'Pegawai Tanah',
+    'Unit Fasiliti':  'Pegawai Fasiliti',
+    'Unit Pajakan':   'Pegawai Pajakan',
+    'Kewangan':       'Pegawai Kewangan',
+    'Undang-undang':  'Pegawai Undang-undang',
+    'Admin':          'Pentadbir Sistem',
+    'Pengurusan':     'Pengarah',
+  };
+
+  function fillCredentials(email, pw, role) {
+    document.getElementById('email').value    = email;
+    document.getElementById('password').value = pw;
+    document.getElementById('err').style.display = 'none';
+  }
 
   function doLogin(e) {
     e.preventDefault();
     const email = document.getElementById('email').value.trim();
     const pw    = document.getElementById('password').value.trim();
-    const role  = document.getElementById('role').value;
     const err   = document.getElementById('err');
 
     err.style.display = 'none';
-    if (!email || !pw || !role) {
+
+    if (!email || !pw) {
       err.style.display = 'flex';
-      document.getElementById('err-msg').textContent = 'Sila isi semua maklumat yang diperlukan.';
+      document.getElementById('err-msg').textContent = 'Sila isi nama pengguna dan kata laluan.';
       return;
     }
 
-    document.getElementById('btn-label').style.display = 'none';
-    document.getElementById('btn-loading').style.display = 'flex';
-    document.getElementById('submit-btn').disabled = true;
+    /* Derive role from email prefix */
+    const prefix = email.split('@')[0].toLowerCase();
+    const role   = ROLE_MAP[prefix] || 'Admin';
+    const name   = DISPLAY_NAMES[role] || prefix;
+
+    document.getElementById('btn-label').style.display    = 'none';
+    document.getElementById('btn-loading').style.display  = 'flex';
+    document.getElementById('submit-btn').disabled        = true;
 
     setTimeout(() => {
-      const raw  = email.split('@')[0].replace(/[._]/g,' ');
-      const name = raw.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
-      localStorage.setItem('ehartanah_user', JSON.stringify({ name, role, email, loginAt: new Date().toISOString() }));
+      localStorage.setItem('ehartanah_user', JSON.stringify({
+        name, role, email, loginAt: new Date().toISOString()
+      }));
       window.location.href = 'dashboard.html';
     }, 900);
   }
