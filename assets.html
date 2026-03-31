@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pengurusan Aset — e-Hartanah Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>body{background:#f8fafc;} .main{margin-left:256px;min-height:100vh;}</style>
+</head>
+<body>
+<div id="sidebar"></div>
+<div class="main">
+  <div id="topbar"></div>
+  <div style="padding:20px;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h1 class="page-title">Pengurusan Aset</h1>
+        <p style="font-size:0.8rem;color:#64748b;margin:2px 0 0;">Rekod tanah dan bangunan milik kerajaan</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" onclick="exportAssets('PDF')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export PDF
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="exportAssets('XLSX')">Export Excel</button>
+        <button class="btn btn-primary btn-sm" onclick="showToast('Fungsi tambah aset akan datang.','info')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Tambah Aset
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats strip -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px;" id="asset-stats">
+      <div class="stat-card" style="grid-column:1/-1;color:#94a3b8;font-size:0.8rem;display:flex;align-items:center;gap:8px;padding:12px 16px;">
+        <svg width="14" height="14" stroke="currentColor" viewBox="0 0 24 24" style="animation:spin 1s linear infinite;"><path fill="none" stroke-width="2.5" d="M12 2a10 10 0 0110 10" stroke-linecap="round"/></svg>
+        Memuatkan...
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card" style="margin-bottom:14px;">
+      <div style="padding:12px 16px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:10px;align-items:end;flex-wrap:wrap;">
+        <div>
+          <label class="label-sm">Cari</label>
+          <div style="position:relative;">
+            <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input id="search-input" class="input" style="padding-left:30px;font-size:0.82rem;" placeholder="ID, nama, lokasi...">
+          </div>
+        </div>
+        <div>
+          <label class="label-sm">Jenis</label>
+          <select id="filter-type" class="select" style="font-size:0.82rem;">
+            <option value="">Semua Jenis</option>
+            <option>Office Building</option><option>Land</option>
+            <option>Residential</option><option>Commercial</option><option>Industrial</option>
+          </select>
+        </div>
+        <div>
+          <label class="label-sm">Status</label>
+          <select id="filter-status" class="select" style="font-size:0.82rem;">
+            <option value="">Semua Status</option>
+            <option>Active</option><option>Under Maintenance</option>
+            <option>Under Valuation</option><option>Inactive</option>
+          </select>
+        </div>
+        <div>
+          <label class="label-sm">Lokasi</label>
+          <select id="filter-location" class="select" style="font-size:0.82rem;">
+            <option value="">Semua Lokasi</option>
+            <option>Kuala Lumpur</option><option>Putrajaya</option><option>Selangor</option>
+            <option>Johor Bahru</option><option>Penang</option><option>Ipoh</option>
+            <option>Kuantan</option><option>Shah Alam</option><option>Seremban</option><option>Pahang</option>
+          </select>
+        </div>
+        <div>
+          <label class="label-sm">Dana</label>
+          <select id="filter-fund" class="select" style="font-size:0.82rem;">
+            <option value="">Semua</option>
+            <option>Federal</option><option>State</option>
+          </select>
+        </div>
+        <div style="padding-top:18px;">
+          <button class="btn btn-ghost btn-sm" onclick="clearFilters()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            Padam
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <div style="padding:10px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:0.875rem;font-weight:600;color:#0f172a;">Senarai Aset</span>
+          <span id="filter-count" style="font-size:0.72rem;background:#f1f5f9;color:#64748b;padding:2px 8px;border-radius:99px;font-weight:500;">— rekod</span>
+        </div>
+        <span id="page-info" style="font-size:0.72rem;color:#94a3b8;"></span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr>
+            <th onclick="sortBy('id')" data-sort="id" style="cursor:pointer;">ID <span class="sort-icon" style="color:#cbd5e1;">↕</span></th>
+            <th>Nama Aset</th>
+            <th onclick="sortBy('type')" data-sort="type" style="cursor:pointer;">Jenis <span class="sort-icon" style="color:#cbd5e1;">↕</span></th>
+            <th>Pemilikan</th>
+            <th onclick="sortBy('location')" data-sort="location" style="cursor:pointer;">Lokasi <span class="sort-icon" style="color:#cbd5e1;">↕</span></th>
+            <th>Dana</th>
+            <th onclick="sortBy('value')" data-sort="value" style="cursor:pointer;text-align:right;">Nilai (RM) <span class="sort-icon" style="color:#cbd5e1;">↕</span></th>
+            <th>Status</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="assets-tbody">
+            <tr><td colspan="9" style="text-align:center;padding:32px;color:#94a3b8;font-size:0.82rem;">
+              <svg width="20" height="20" stroke="currentColor" viewBox="0 0 24 24" style="animation:spin 1s linear infinite;display:block;margin:0 auto 8px;"><path fill="none" stroke-width="2.5" d="M12 2a10 10 0 0110 10" stroke-linecap="round"/></svg>
+              Memuatkan...
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:10px 16px;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:flex-end;gap:4px;" id="pagination"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="asset-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 style="font-size:0.95rem;font-weight:600;color:#0f172a;margin:0;">Butiran Aset</h3>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;padding:4px;border-radius:5px;color:#64748b;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='none'">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div style="padding:16px 20px;" id="modal-content"></div>
+    <div style="padding:12px 20px;border-top:1px solid #f1f5f9;display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Tutup</button>
+      <button class="btn btn-primary btn-sm" onclick="showToast('Fungsi edit akan datang.','info')">Edit Aset</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/nav.js"></script>
+<script>initNav('assets');</script>
+<script src="js/assets.js"></script>
+<style>@keyframes spin{to{transform:rotate(360deg);}}</style>
+</body>
+</html>

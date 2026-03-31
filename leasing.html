@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pajakan & Sewa — e-Hartanah Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>body{background:#f8fafc;} .main{margin-left:256px;min-height:100vh;}</style>
+</head>
+<body>
+<div id="sidebar"></div>
+<div class="main">
+  <div id="topbar"></div>
+  <div style="padding:20px;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h1 class="page-title">Pajakan & Penyewaan</h1>
+        <p style="font-size:0.8rem;color:#64748b;margin:2px 0 0;">Pengurusan perjanjian sewa dan sewaan harta</p>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="simulateExport('PDF','Senarai_Pajakan')">Export PDF</button>
+        <button class="btn btn-primary btn-sm" onclick="showToast('Tambah penyewa baru — akan datang.','info')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Penyewa Baru
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px;">
+      <div class="stat-card fade-up d1">
+        <div class="stat-icon blue" style="width:28px;height:28px;margin-bottom:8px;"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+        <p style="font-size:1.25rem;font-weight:700;color:#0f172a;margin:0 0 2px;" id="ls-total">—</p>
+        <p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Jumlah Penyewa</p>
+      </div>
+      <div class="stat-card fade-up d2">
+        <div class="stat-icon green" style="width:28px;height:28px;margin-bottom:8px;"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+        <p style="font-size:1.25rem;font-weight:700;color:#0f172a;margin:0 0 2px;" id="ls-active">—</p>
+        <p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Sewaan Aktif</p>
+      </div>
+      <div class="stat-card fade-up d3">
+        <div class="stat-icon amber" style="width:28px;height:28px;margin-bottom:8px;"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+        <p style="font-size:1.25rem;font-weight:700;color:#0f172a;margin:0 0 2px;" id="ls-expiring">—</p>
+        <p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Hampir Tamat</p>
+      </div>
+      <div class="stat-card fade-up d4">
+        <div class="stat-icon rose" style="width:28px;height:28px;margin-bottom:8px;"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+        <p style="font-size:1.25rem;font-weight:700;color:#0f172a;margin:0 0 2px;" id="ls-expired">—</p>
+        <p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Tamat Tempoh</p>
+      </div>
+      <div class="stat-card fade-up d5">
+        <div class="stat-icon teal" style="width:28px;height:28px;margin-bottom:8px;"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+        <p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0 0 2px;" id="ls-income">—</p>
+        <p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Sewa/Bulan</p>
+      </div>
+    </div>
+
+    <!-- Warning banner -->
+    <div id="ls-warn" style="display:none;margin-bottom:14px;" class="alert alert-warning">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      <span id="ls-warn-msg"></span>
+    </div>
+
+    <!-- Filters -->
+    <div class="card" style="margin-bottom:14px;">
+      <div style="padding:10px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+        <div style="flex:1;min-width:180px;">
+          <div style="position:relative;">
+            <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input id="ls-search" class="input" style="padding-left:30px;font-size:0.82rem;" placeholder="Nama penyewa, harta...">
+          </div>
+        </div>
+        <select id="ls-status" class="select" style="min-width:130px;font-size:0.82rem;">
+          <option value="">Semua Status</option>
+          <option>Active</option><option>Expiring Soon</option><option>Expired</option>
+        </select>
+        <select id="ls-type" class="select" style="min-width:150px;font-size:0.82rem;">
+          <option value="">Semua Jenis</option>
+          <option>Government</option><option>Government-Linked</option><option>Commercial</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="lsClearFilters()">Padam</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card fade-up">
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr>
+            <th>ID</th><th>Penyewa</th><th>Harta Disewa</th><th>Jenis</th>
+            <th style="text-align:right;">Sewa/Bulan</th><th>Mula</th><th>Tamat</th>
+            <th>Baki Hari</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="ls-tbody"><tr><td colspan="10" style="text-align:center;padding:28px;color:#94a3b8;font-size:0.82rem;">Memuatkan...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tenant Modal -->
+<div class="modal-overlay" id="ls-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 style="font-size:0.95rem;font-weight:600;color:#0f172a;margin:0;">Butiran Penyewa</h3>
+      <button onclick="document.getElementById('ls-modal').classList.remove('open')" style="background:none;border:none;cursor:pointer;padding:4px;color:#64748b;">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div style="padding:16px 20px;" id="ls-modal-body"></div>
+    <div style="padding:12px 20px;border-top:1px solid #f1f5f9;display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('ls-modal').classList.remove('open')">Tutup</button>
+      <button class="btn btn-primary btn-sm" onclick="showToast('Perbaharui pajakan — akan datang.','info')">Perbaharui Pajakan</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/nav.js"></script>
+<script>initNav('leasing');</script>
+<script>
+let allTenants=[];
+async function lsLoad(){
+  try{ const d=await fetch('mock-data/tenancy.json').then(r=>r.json()); allTenants=d.tenants; }
+  catch{ allTenants=lsDemo(); }
+  lsStats(); lsRender(allTenants);
+}
+function lsStats(){
+  const act=allTenants.filter(t=>t.status==='Active');
+  const exp=allTenants.filter(t=>t.status==='Expiring Soon');
+  const xp =allTenants.filter(t=>t.status==='Expired');
+  document.getElementById('ls-total').textContent=allTenants.length;
+  document.getElementById('ls-active').textContent=act.length;
+  document.getElementById('ls-expiring').textContent=exp.length;
+  document.getElementById('ls-expired').textContent=xp.length;
+  document.getElementById('ls-income').textContent='RM '+act.reduce((s,t)=>s+t.rental,0).toLocaleString();
+  if(exp.length||xp.length){
+    document.getElementById('ls-warn').style.display='flex';
+    document.getElementById('ls-warn-msg').innerHTML=`<b>${exp.length} sewaan</b> hampir tamat dan <b>${xp.length} sewaan</b> telah tamat tempoh. Tindakan pembaharuan diperlukan.`;
+  }
+}
+function lsRender(list){
+  const today=new Date();
+  document.getElementById('ls-tbody').innerHTML=list.length===0
+    ?`<tr><td colspan="10" style="text-align:center;padding:28px;color:#94a3b8;font-size:0.82rem;">Tiada rekod.</td></tr>`
+    :list.map(t=>{
+      const days=Math.round((new Date(t.endDate)-today)/(864e5));
+      const dc=days<0?'#dc2626':days<=90?'#d97706':'#64748b';
+      return`<tr>
+        <td><code style="font-size:0.7rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#475569;">${t.id}</code></td>
+        <td class="primary">
+          <div style="font-weight:500;color:#0f172a;">${t.name}</div>
+          <div style="font-size:0.7rem;color:#94a3b8;">${t.contact}</div>
+        </td>
+        <td style="font-size:0.78rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.property}</td>
+        <td>${statusBadge(t.type)}</td>
+        <td style="text-align:right;font-weight:600;font-size:0.82rem;">RM ${t.rental.toLocaleString()}</td>
+        <td style="font-size:0.78rem;color:#64748b;">${formatDate(t.startDate)}</td>
+        <td style="font-size:0.78rem;color:${dc};font-weight:500;">${formatDate(t.endDate)}</td>
+        <td style="font-weight:600;font-size:0.78rem;color:${dc};">${days<0?`${Math.abs(days)}h lepas`:days+'h'}</td>
+        <td>${statusBadge(t.status)}</td>
+        <td>
+          <div style="display:flex;gap:4px;">
+            <button onclick="lsView('${t.id}')" class="btn btn-ghost btn-xs" title="Lihat butiran" style="padding:3px 7px;"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            ${t.status!=='Active'?`<button onclick="showToast('Baharui ${t.id}','info')" class="btn btn-ghost btn-xs" title="Baharui" style="padding:3px 7px;"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>`:''}
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+}
+function lsApply(){
+  const s=document.getElementById('ls-search').value.toLowerCase();
+  const st=document.getElementById('ls-status').value;
+  const ty=document.getElementById('ls-type').value;
+  lsRender(allTenants.filter(t=>{
+    if(s&&!`${t.id} ${t.name} ${t.property} ${t.contact}`.toLowerCase().includes(s))return false;
+    if(st&&t.status!==st)return false;
+    if(ty&&t.type!==ty)return false;
+    return true;
+  }));
+}
+function lsClearFilters(){
+  ['ls-search','ls-status','ls-type'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  lsRender(allTenants);
+}
+function lsView(id){
+  const t=allTenants.find(x=>x.id===id); if(!t)return;
+  const days=Math.round((new Date(t.endDate)-new Date())/(864e5));
+  document.getElementById('ls-modal-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      ${[['ID Sewaan',`<code style="font-size:0.78rem;background:#f1f5f9;padding:2px 7px;border-radius:4px;">${t.id}</code>`],
+         ['Status',statusBadge(t.status)],
+         ['Nama Penyewa',`<span style="font-weight:600;">${t.name}</span>`,'grid-column:1/-1'],
+         ['Harta Disewa',t.property,'grid-column:1/-1'],
+         ['Jenis Penyewa',t.type],['Pegawai Kontak',t.contact],
+         ['No. Telefon',t.phone],['E-mel',t.email],
+         ['Sewa Bulanan',`<span style="font-weight:700;color:#2563eb;">RM ${t.rental.toLocaleString()}</span>`],
+         ['Deposit',`RM ${t.deposit.toLocaleString()}`],
+         ['Tarikh Mula',formatDate(t.startDate)],['Tarikh Tamat',`<span style="color:${days<0?'#dc2626':days<90?'#d97706':'#0f172a'};font-weight:600;">${formatDate(t.endDate)}</span>`],
+         ['Baki Tempoh',`<span style="font-weight:700;color:${days<0?'#dc2626':days<90?'#d97706':'#059669'};">${days<0?`Tamat ${Math.abs(days)} hari lepas`:`${days} hari lagi`}</span>`,'grid-column:1/-1'],
+      ].map(([l,v,span=''])=>`<div style="${span}"><p style="font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;margin:0 0 3px;">${l}</p><p style="font-size:0.82rem;color:#0f172a;margin:0;">${v}</p></div>`).join('')}
+    </div>`;
+  document.getElementById('ls-modal').classList.add('open');
+}
+function lsDemo(){
+  return[
+    {id:'TNT-001',name:'Syarikat Teknologi Maju Sdn Bhd',property:'Bangunan Pejabat Utama, Lot 3A',contact:'Ahmad Faizal',phone:'03-2161 8800',email:'faizal@tekno.com',rental:15000,deposit:45000,startDate:'2022-01-01',endDate:'2026-12-31',status:'Active',type:'Commercial'},
+    {id:'TNT-002',name:'Koperasi Kakitangan Kerajaan',property:'Bangunan Pejabat Utama, Lot 5B',contact:'Puan Rosnah',phone:'03-2161 9900',email:'kop@gov.my',rental:8500,deposit:25500,startDate:'2021-06-01',endDate:'2025-05-31',status:'Expiring Soon',type:'Government'},
+    {id:'TNT-003',name:'Jabatan Imigresen Malaysia',property:'Kedai Pejabat, Lot 2',contact:'Tuan Hj Nordin',phone:'07-388 5678',email:'imi@gov.my',rental:5000,deposit:15000,startDate:'2020-09-01',endDate:'2025-08-31',status:'Expiring Soon',type:'Government'},
+    {id:'TNT-004',name:'Pos Malaysia Berhad',property:'Bangunan Arkib, Aras 1',contact:'Cik Lim Hui Ying',phone:'03-8888 5000',email:'pos@pos.com',rental:22000,deposit:66000,startDate:'2019-01-01',endDate:'2027-12-31',status:'Active',type:'Government-Linked'},
+    {id:'TNT-005',name:'Digi Telecommunications',property:'Gudang Bekalan, Lot A',contact:'Mr Siva Raj',phone:'04-643 2200',email:'digi@digi.com',rental:18500,deposit:55500,startDate:'2022-04-01',endDate:'2024-04-30',status:'Expired',type:'Commercial'},
+    {id:'TNT-006',name:'Bank Simpanan Nasional',property:'Bangunan Pejabat Utama, Lot 2',contact:'Pn Zarina',phone:'03-2693 4311',email:'bsn@bsn.com',rental:9800,deposit:29400,startDate:'2022-08-01',endDate:'2028-07-31',status:'Active',type:'Government-Linked'},
+    {id:'TNT-007',name:'Klinik Dr. Suraya',property:'Gerai Pasar, Unit 12',contact:'Dr Suraya',phone:'09-748 2211',email:'klinik@gmail.com',rental:1800,deposit:5400,startDate:'2023-07-01',endDate:'2025-06-30',status:'Expiring Soon',type:'Commercial'},
+    {id:'TNT-008',name:'Astro All Asia Networks',property:'Kompleks Sukan, Papan Iklan',contact:'En Hafiz',phone:'03-9543 6688',email:'astro@astro.com',rental:6000,deposit:18000,startDate:'2024-01-01',endDate:'2026-12-31',status:'Active',type:'Commercial'},
+  ];
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  lsLoad();
+  document.getElementById('ls-search')?.addEventListener('input',lsApply);
+  ['ls-status','ls-type'].forEach(id=>document.getElementById(id)?.addEventListener('change',lsApply));
+  document.getElementById('ls-modal')?.addEventListener('click',e=>{if(e.target.id==='ls-modal')e.target.classList.remove('open');});
+});
+</script>
+</body>
+</html>

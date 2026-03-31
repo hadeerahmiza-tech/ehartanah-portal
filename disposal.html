@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pelupusan Aset — e-Hartanah Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>body{background:#f8fafc;} .main{margin-left:256px;min-height:100vh;}</style>
+</head>
+<body>
+<div id="sidebar"></div>
+<div class="main">
+  <div id="topbar"></div>
+  <div style="padding:20px;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h1 class="page-title">Pelupusan Aset</h1>
+        <p style="font-size:0.8rem;color:#64748b;margin:2px 0 0;">Pengurusan proses kelulusan pelupusan harta kerajaan</p>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="showToast('Permohonan pelupusan baru — akan datang.','info')">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Permohonan Baru
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-bottom:16px;">
+      <div class="stat-card fade-up d1" style="padding:12px;"><p style="font-size:1.2rem;font-weight:700;color:#0f172a;margin:0 0 2px;">6</p><p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Jumlah Permohonan</p></div>
+      <div class="stat-card fade-up d2" style="padding:12px;"><p style="font-size:1.2rem;font-weight:700;color:#d97706;margin:0 0 2px;">2</p><p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Menunggu Kelulusan</p></div>
+      <div class="stat-card fade-up d3" style="padding:12px;"><p style="font-size:1.2rem;font-weight:700;color:#2563eb;margin:0 0 2px;">3</p><p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Dalam Proses</p></div>
+      <div class="stat-card fade-up d4" style="padding:12px;"><p style="font-size:1.2rem;font-weight:700;color:#059669;margin:0 0 2px;">1</p><p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Selesai Dilupuskan</p></div>
+      <div class="stat-card fade-up d5" style="padding:12px;"><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0 0 2px;">RM 4.2M</p><p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Nilai Dilupuskan</p></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+
+      <!-- Mermaid workflow -->
+      <div class="card fade-up d1">
+        <div class="card-header">
+          <span class="card-title">
+            <svg width="14" height="14" fill="none" stroke="#2563eb" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+            Aliran Kerja Pelupusan
+          </span>
+        </div>
+        <div style="padding:16px;overflow-x:auto;">
+          <div class="mermaid">
+flowchart TD
+    A([Permohonan\nUnit Aset]) --> B{Semakan Awal\nPegawai}
+    B -- Lengkap --> C[Penilaian Bebas\nJuru Nilai]
+    B -- Tidak Lengkap --> A
+    C --> D{Kelulusan\nPengarah}
+    D -- Lulus --> E[Mesyuarat\nJawatankuasa]
+    D -- Tolak --> F([Ditolak])
+    E --> G{Keputusan}
+    G -- Lulus --> H[Iklan Tender\nLelongan]
+    G -- Tolak --> F
+    H --> I[Penilaian\nBidaan]
+    I --> J[Surat Tawaran]
+    J --> K[Dokumen\nUndang-undang]
+    K --> L([Pelupusan Selesai])
+    style A fill:#dbeafe,stroke:#2563eb,color:#1e40af
+    style L fill:#dcfce7,stroke:#059669,color:#065f46
+    style F fill:#fee2e2,stroke:#dc2626,color:#991b1b
+    style E fill:#ede9fe,stroke:#7c3aed,color:#5b21b6
+          </div>
+        </div>
+      </div>
+
+      <!-- Current status tracker -->
+      <div class="card fade-up d2">
+        <div class="card-header">
+          <span class="card-title">
+            <svg width="14" height="14" fill="none" stroke="#475569" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            Status Semasa — DSP-2024-001
+          </span>
+          <span class="badge badge-inprogress">Dalam Proses</span>
+        </div>
+        <div style="padding:16px;">
+          <div style="font-size:0.82rem;color:#475569;margin-bottom:14px;padding:10px;background:#f8fafc;border-radius:6px;border:1px solid #f1f5f9;">
+            <span style="font-weight:600;color:#0f172a;">Stor Peralatan JKR, Seremban</span><br>
+            <span style="font-size:0.72rem;color:#94a3b8;">AST-2024-015 · Jualan Lelongan Awam · RM 2,100,000</span>
+          </div>
+          <div>
+            <div class="step-connector"><div class="step-dot done">✓</div><p style="font-size:0.82rem;font-weight:600;color:#059669;margin:0 0 2px;">Permohonan Dikemukakan</p><p style="font-size:0.72rem;color:#94a3b8;margin:0;">15 Jan 2026 — Unit Harta</p></div>
+            <div class="step-connector"><div class="step-dot done">✓</div><p style="font-size:0.82rem;font-weight:600;color:#059669;margin:0 0 2px;">Semakan Awal Selesai</p><p style="font-size:0.72rem;color:#94a3b8;margin:0;">22 Jan 2026 — Pegawai Aset</p></div>
+            <div class="step-connector"><div class="step-dot done">✓</div><p style="font-size:0.82rem;font-weight:600;color:#059669;margin:0 0 2px;">Penilaian Bebas Selesai</p><p style="font-size:0.72rem;color:#94a3b8;margin:0;">10 Feb 2026 — Aznan & Co.</p></div>
+            <div class="step-connector"><div class="step-dot current">4</div><p style="font-size:0.82rem;font-weight:600;color:#2563eb;margin:0 0 2px;">Mesyuarat Jawatankuasa</p><p style="font-size:0.72rem;color:#94a3b8;margin:0;">Dijadual: 5 Apr 2026</p></div>
+            <div class="step-connector"><div class="step-dot pending">5</div><p style="font-size:0.82rem;font-weight:500;color:#94a3b8;margin:0 0 2px;">Iklan Tender / Lelongan</p><p style="font-size:0.72rem;color:#cbd5e1;margin:0;">Menunggu kelulusan</p></div>
+            <div class="step-connector"><div class="step-dot pending">6</div><p style="font-size:0.82rem;font-weight:500;color:#94a3b8;margin:0 0 2px;">Pindah Milik & Selesai</p><p style="font-size:0.72rem;color:#cbd5e1;margin:0;">Menunggu</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- All disposal requests -->
+    <div class="card fade-up">
+      <div class="card-header">
+        <span class="card-title">Semua Permohonan Pelupusan</span>
+        <button class="btn btn-outline btn-sm" onclick="simulateExport('PDF','Permohonan_Pelupusan')">Export PDF</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr>
+            <th>No. Permohonan</th><th>Aset</th><th>Kaedah</th>
+            <th>Tarikh</th><th style="text-align:right;">Nilai (RM)</th>
+            <th>Pemohon</th><th>Langkah Semasa</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="dsp-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/nav.js"></script>
+<script>initNav('disposal');</script>
+<script>
+mermaid.initialize({startOnLoad:true,theme:'neutral',flowchart:{curve:'basis'},fontSize:12});
+const dspData=[
+  {id:'DSP-2024-001',asset:'Stor Peralatan JKR',method:'Jualan Lelongan',date:'2026-01-15',value:2100000,applicant:'Ahmad Razali',step:4,stepLabel:'Kelulusan Jawatankuasa',status:'In Progress'},
+  {id:'DSP-2024-002',asset:'Lot Tanah Simpan Kuantan',method:'Pindah Milik',date:'2026-02-01',value:850000,applicant:'Pn. Habibah (PTG)',step:2,stepLabel:'Semakan Awal',status:'Pending'},
+  {id:'DSP-2024-003',asset:'Gerai Lama Pasar Kota Bharu',method:'Pembatalan Pajakan',date:'2025-11-20',value:120000,applicant:'En. Razif',step:6,stepLabel:'Selesai',status:'Completed'},
+  {id:'DSP-2024-004',asset:'Bangunan Lama JKR Shah Alam',method:'Jualan Rundingan Terus',date:'2026-02-28',value:5500000,applicant:'YH Dato Pengarah',step:3,stepLabel:'Penilaian Bebas',status:'In Progress'},
+  {id:'DSP-2024-005',asset:'Tanah Sawah Mukim Maran',method:'Pindah Milik Kerajaan',date:'2026-03-10',value:320000,applicant:'Pn. Zarith',step:3,stepLabel:'Kelulusan Pengarah',status:'Pending'},
+  {id:'DSP-2024-006',asset:'Komputer & Peralatan Pejabat',method:'Aset Bergerak',date:'2026-01-05',value:45000,applicant:'En. Kamal (ICT)',step:6,stepLabel:'Selesai',status:'Completed'},
+];
+document.getElementById('dsp-tbody').innerHTML=dspData.map(d=>`<tr>
+  <td><code style="font-size:0.7rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#475569;">${d.id}</code></td>
+  <td class="primary" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.asset}</td>
+  <td><span class="badge badge-pending" style="font-size:0.68rem;">${d.method}</span></td>
+  <td style="font-size:0.75rem;color:#64748b;">${formatDate(d.date)}</td>
+  <td style="text-align:right;font-weight:600;font-size:0.82rem;">RM ${d.value.toLocaleString()}</td>
+  <td style="font-size:0.78rem;">${d.applicant}</td>
+  <td>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="progress" style="width:60px;"><div class="progress-bar" style="width:${Math.round(d.step/6*100)}%;background:${d.status==='Completed'?'#059669':d.status==='In Progress'?'#2563eb':'#d97706'};"></div></div>
+      <span style="font-size:0.72rem;color:#64748b;">${d.stepLabel}</span>
+    </div>
+  </td>
+  <td>${statusBadge(d.status)}</td>
+  <td><button onclick="showToast('${d.id}: ${d.asset} — ${d.stepLabel}','info')" class="btn btn-outline btn-xs">Butiran</button></td>
+</tr>`).join('');
+</script>
+</body>
+</html>

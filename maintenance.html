@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Penyelenggaraan — e-Hartanah Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>body{background:#f8fafc;} .main{margin-left:256px;min-height:100vh;}</style>
+</head>
+<body>
+<div id="sidebar"></div>
+<div class="main">
+  <div id="topbar"></div>
+  <div style="padding:20px;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h1 class="page-title">Penyelenggaraan</h1>
+        <p style="font-size:0.8rem;color:#64748b;margin:2px 0 0;">Kerja-kerja penyelenggaraan berjadual dan ad-hoc</p>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="simulateExport('PDF','Laporan_Penyelenggaraan')">Export PDF</button>
+        <button class="btn btn-primary btn-sm" onclick="showToast('Tambah permohonan baru — akan datang.','info')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Permohonan Baru
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-bottom:16px;" id="mnt-stats">
+      <!-- filled by JS -->
+    </div>
+
+    <!-- High priority alert -->
+    <div id="mnt-alert" style="display:none;margin-bottom:14px;" class="alert alert-danger">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M20.618 5.984A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      <span id="mnt-alert-msg"></span>
+    </div>
+
+    <!-- Card with tabs + filters + table -->
+    <div class="card fade-up">
+      <!-- Tabs -->
+      <div style="padding:12px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div class="tab-group">
+          <button class="tab-item active" id="mnt-tab-all"       onclick="mntTab('all')">Semua</button>
+          <button class="tab-item"        id="mnt-tab-scheduled" onclick="mntTab('scheduled')">🗓 Berjadual</button>
+          <button class="tab-item"        id="mnt-tab-adhoc"     onclick="mntTab('adhoc')">⚡ Ad-hoc</button>
+          <button class="tab-item"        id="mnt-tab-high"      onclick="mntTab('high')">🔴 Tinggi</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div style="position:relative;">
+            <svg style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#94a3b8;" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input id="mnt-search" class="input" style="padding-left:28px;font-size:0.8rem;width:200px;" placeholder="Cari...">
+          </div>
+          <select id="mnt-status" class="select" style="font-size:0.8rem;min-width:120px;">
+            <option value="">Semua Status</option>
+            <option>Pending</option><option>In Progress</option><option>Completed</option>
+          </select>
+          <select id="mnt-cat" class="select" style="font-size:0.8rem;min-width:130px;">
+            <option value="">Semua Kategori</option>
+            <option>HVAC</option><option>Electrical</option><option>Plumbing</option>
+            <option>Civil Works</option><option>Landscaping</option><option>Security</option>
+            <option>Painting</option><option>Fire Safety</option><option>Lift Maintenance</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr>
+            <th>ID</th><th>Jenis</th><th>Kategori</th><th>Harta</th><th>Penerangan</th>
+            <th>Tarikh</th><th>Kontraktor</th><th style="text-align:right;">Anggaran (RM)</th>
+            <th>Keutamaan</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="mnt-tbody"><tr><td colspan="11" style="text-align:center;padding:28px;color:#94a3b8;font-size:0.82rem;">Memuatkan...</td></tr></tbody>
+        </table>
+      </div>
+      <div style="padding:8px 16px;border-top:1px solid #f1f5f9;">
+        <span id="mnt-count" style="font-size:0.72rem;color:#94a3b8;"></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/nav.js"></script>
+<script>initNav('maintenance');</script>
+<script>
+let allMnt=[], mntActiveTab='all';
+const CATICONS={'HVAC':'❄️','Electrical':'⚡','Plumbing':'🔧','Civil Works':'🏗','Landscaping':'🌿','Security':'🔒','Painting':'🎨','Fire Safety':'🔥','Lift Maintenance':'🛗'};
+
+async function mntLoad(){
+  try{ const d=await fetch('mock-data/maintenance.json').then(r=>r.json()); allMnt=d.maintenance; }
+  catch{ allMnt=mntDemo(); }
+  mntRenderStats(); mntRender();
+}
+function mntRenderStats(){
+  const pending=allMnt.filter(m=>m.status==='Pending').length;
+  const inprog =allMnt.filter(m=>m.status==='In Progress').length;
+  const done   =allMnt.filter(m=>m.status==='Completed').length;
+  const cost   =allMnt.reduce((s,m)=>s+(m.estimatedCost||0),0);
+  const highPending=allMnt.filter(m=>m.priority==='High'&&m.status!=='Completed').length;
+  const defs=[
+    {l:'Jumlah',v:allMnt.length,ic:'slate'},
+    {l:'Belum Selesai',v:pending,ic:'amber'},
+    {l:'Dalam Proses',v:inprog,ic:'blue'},
+    {l:'Selesai',v:done,ic:'green'},
+    {l:'Est. Kos',v:'RM '+(cost/1000).toFixed(0)+'K',ic:'rose'},
+  ];
+  document.getElementById('mnt-stats').innerHTML=defs.map((d,i)=>`
+    <div class="stat-card fade-up d${i+1}">
+      <div class="stat-icon ${d.ic}" style="width:28px;height:28px;margin-bottom:8px;font-size:0.8rem;font-weight:700;">${d.v}</div>
+      <p style="font-size:1.15rem;font-weight:700;color:#0f172a;margin:0 0 2px;">${d.v}</p>
+      <p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">${d.l}</p>
+    </div>
+  `).join('');
+  // Redo with proper icons
+  document.getElementById('mnt-stats').innerHTML=defs.map((d,i)=>`
+    <div class="stat-card fade-up d${i+1}" style="padding:12px;">
+      <p style="font-size:1.2rem;font-weight:700;color:#0f172a;margin:0 0 2px;">${d.v}</p>
+      <p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">${d.l}</p>
+    </div>
+  `).join('');
+  if(highPending>0){
+    document.getElementById('mnt-alert').style.display='flex';
+    document.getElementById('mnt-alert-msg').innerHTML=`<b>${highPending} kerja keutamaan tinggi</b> masih belum selesai dan memerlukan perhatian segera.`;
+  }
+}
+function mntFiltered(){
+  const s=document.getElementById('mnt-search')?.value.toLowerCase()||'';
+  const st=document.getElementById('mnt-status')?.value||'';
+  const cat=document.getElementById('mnt-cat')?.value||'';
+  return allMnt.filter(m=>{
+    if(mntActiveTab==='scheduled'&&m.type!=='Scheduled')return false;
+    if(mntActiveTab==='adhoc'&&m.type!=='Ad-hoc')return false;
+    if(mntActiveTab==='high'&&m.priority!=='High')return false;
+    if(st&&m.status!==st)return false;
+    if(cat&&m.category!==cat)return false;
+    if(s&&!`${m.id} ${m.property} ${m.description} ${m.contractor}`.toLowerCase().includes(s))return false;
+    return true;
+  });
+}
+function mntRender(){
+  const items=mntFiltered();
+  document.getElementById('mnt-count').textContent=`${items.length} rekod dipaparkan`;
+  document.getElementById('mnt-tbody').innerHTML=items.length===0
+    ?`<tr><td colspan="11" style="text-align:center;padding:28px;color:#94a3b8;font-size:0.82rem;">Tiada rekod dijumpai.</td></tr>`
+    :items.map(m=>`<tr>
+      <td><code style="font-size:0.7rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#475569;">${m.id}</code></td>
+      <td><span class="badge ${m.type==='Scheduled'?'badge-inprogress':'badge-pending'}" style="font-size:0.68rem;">${m.type==='Scheduled'?'Berjadual':'Ad-hoc'}</span></td>
+      <td style="font-size:0.78rem;">${CATICONS[m.category]||'🔧'} ${m.category}</td>
+      <td style="font-size:0.78rem;font-weight:500;color:#0f172a;">${m.property}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.78rem;color:#475569;">${m.description}</td>
+      <td style="font-size:0.75rem;color:#64748b;white-space:nowrap;">${formatDate(m.scheduledDate)}</td>
+      <td style="font-size:0.75rem;">${m.contractor}</td>
+      <td style="text-align:right;font-weight:600;font-size:0.82rem;">RM ${(m.estimatedCost||0).toLocaleString()}</td>
+      <td>${statusBadge(m.priority)}</td>
+      <td>${statusBadge(m.status)}</td>
+      <td>
+        <div style="display:flex;gap:4px;">
+          <button onclick="mntView('${m.id}')" class="btn btn-ghost btn-xs" title="Lihat butiran" style="padding:3px 7px;"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          ${m.status!=='Completed'?`<button onclick="mntAdvance('${m.id}')" class="btn btn-ghost btn-xs" title="Kemas kini status" style="padding:3px 7px;"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`:''}
+        </div>
+      </td>
+    </tr>`).join('');
+}
+function mntTab(tab){
+  mntActiveTab=tab;
+  ['all','scheduled','adhoc','high'].forEach(t=>{
+    document.getElementById('mnt-tab-'+t)?.classList.toggle('active',t===tab);
+  });
+  mntRender();
+}
+function mntView(id){
+  const m=allMnt.find(x=>x.id===id); if(!m)return;
+  alert(`BUTIRAN PENYELENGGARAAN\n\nID: ${m.id}\nJenis: ${m.type}\nKategori: ${m.category}\nHarta: ${m.property}\n\nPenerangan:\n${m.description}\n\nTarikh Dijadual: ${formatDate(m.scheduledDate)}\nKontraktor: ${m.contractor}\n${m.contractorContact?'Telefon: '+m.contractorContact+'\n':''}\nAnggaran Kos: RM ${(m.estimatedCost||0).toLocaleString()}\nKos Sebenar: ${m.actualCost?'RM '+m.actualCost.toLocaleString():'Belum ditetapkan'}\n\nKeutamaan: ${m.priority}\nStatus: ${m.status}`);
+}
+function mntAdvance(id){
+  const m=allMnt.find(x=>x.id===id); if(!m)return;
+  const next=m.status==='Pending'?'In Progress':'Completed';
+  m.status=next;
+  showToast(`Status ${id} dikemas kini → ${next}`,'success');
+  mntRender();
+}
+function mntDemo(){
+  return[
+    {id:'MNT-001',type:'Scheduled',category:'HVAC',property:'Bangunan Pejabat Utama',description:'Servis tahunan sistem penghawa dingin berpusat',scheduledDate:'2026-04-15',contractor:'Cool Air Services',estimatedCost:12500,actualCost:null,status:'Pending',priority:'Medium'},
+    {id:'MNT-002',type:'Scheduled',category:'Electrical',property:'Kompleks Sukan Daerah',description:'Pemeriksaan dan penggantian panel elektrik utama',scheduledDate:'2026-04-20',contractor:'Elektrik Jaya',estimatedCost:8800,actualCost:null,status:'In Progress',priority:'High'},
+    {id:'MNT-003',type:'Ad-hoc',category:'Plumbing',property:'Kompleks Perumahan Pegawai',description:'Paip pecah di aras 8 — kebocoran teruk',scheduledDate:'2026-03-28',contractor:'Master Plumbing',estimatedCost:2200,actualCost:2650,status:'Completed',priority:'High'},
+    {id:'MNT-004',type:'Scheduled',category:'Civil Works',property:'Bangunan Mahkamah Daerah',description:'Pembaikan bumbung dan saliran air hujan',scheduledDate:'2026-05-10',contractor:'Zain Construction',estimatedCost:35000,actualCost:null,status:'Pending',priority:'High'},
+    {id:'MNT-005',type:'Scheduled',category:'Landscaping',property:'Tanah Rizab Putrajaya',description:'Kerja landskap dan pemotongan rumput bulanan',scheduledDate:'2026-04-05',contractor:'Hijau Indah',estimatedCost:1500,actualCost:1500,status:'Completed',priority:'Low'},
+    {id:'MNT-006',type:'Ad-hoc',category:'Electrical',property:'Gudang Bekalan Strategik',description:'Kerosakan lampu kecemasan — gantian segera',scheduledDate:'2026-03-25',contractor:'Elektrik Jaya',estimatedCost:4500,actualCost:4200,status:'Completed',priority:'High'},
+    {id:'MNT-007',type:'Scheduled',category:'Painting',property:'Klinik Kesihatan Komuniti',description:'Kerja cat semula dalaman dan luaran',scheduledDate:'2026-05-20',contractor:'Warna Indah',estimatedCost:18000,actualCost:null,status:'Pending',priority:'Medium'},
+    {id:'MNT-008',type:'Ad-hoc',category:'Security',property:'Bangunan Arkib Negara',description:'CCTV rosak — penggantian kamera lobi utama',scheduledDate:'2026-04-01',contractor:'SecureTech',estimatedCost:6800,actualCost:null,status:'In Progress',priority:'High'},
+  ];
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  mntLoad();
+  document.getElementById('mnt-search')?.addEventListener('input',mntRender);
+  ['mnt-status','mnt-cat'].forEach(id=>document.getElementById(id)?.addEventListener('change',mntRender));
+});
+</script>
+</body>
+</html>

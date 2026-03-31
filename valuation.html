@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Penilaian Harta — e-Hartanah Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>body{background:#f8fafc;} .main{margin-left:256px;min-height:100vh;}</style>
+</head>
+<body>
+<div id="sidebar"></div>
+<div class="main">
+  <div id="topbar"></div>
+  <div style="padding:20px;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h1 class="page-title">Penilaian Harta</h1>
+        <p style="font-size:0.8rem;color:#64748b;margin:2px 0 0;">Rekod penilaian dan nilai pasaran semasa harta kerajaan</p>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="simulateExport('PDF','Laporan_Penilaian')">Export PDF</button>
+        <button class="btn btn-primary btn-sm" onclick="showToast('Tambah rekod penilaian baru — akan datang.','info')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Penilaian Baru
+        </button>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:16px;">
+      <div class="stat-card fade-up d1" style="padding:12px;">
+        <p style="font-size:1.2rem;font-weight:700;color:#0f172a;margin:0 0 2px;">15</p>
+        <p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Aset Dinilai</p>
+      </div>
+      <div class="stat-card fade-up d2" style="padding:12px;">
+        <p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0 0 2px;">RM 156.4M</p>
+        <p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Jumlah Nilai Pasaran</p>
+      </div>
+      <div class="stat-card fade-up d3" style="padding:12px;">
+        <p style="font-size:1.2rem;font-weight:700;color:#d97706;margin:0 0 2px;">3</p>
+        <p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Dalam 90 Hari</p>
+      </div>
+      <div class="stat-card fade-up d4" style="padding:12px;">
+        <p style="font-size:1.2rem;font-weight:700;color:#dc2626;margin:0 0 2px;">2</p>
+        <p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Penilaian Tertunggak</p>
+      </div>
+      <div class="stat-card fade-up d5" style="padding:12px;">
+        <p style="font-size:1.2rem;font-weight:700;color:#059669;margin:0 0 2px;">+8.2%</p>
+        <p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Pertumbuhan Nilai Purata</p>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card" style="margin-bottom:14px;">
+      <div style="padding:10px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <div style="flex:1;min-width:180px;position:relative;">
+          <svg style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#94a3b8;" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input id="val-search" class="input" style="padding-left:28px;font-size:0.82rem;" placeholder="Cari aset...">
+        </div>
+        <select id="val-status" class="select" style="min-width:140px;font-size:0.82rem;">
+          <option value="">Semua Status</option>
+          <option>Current</option><option>Due Soon</option><option>Overdue</option>
+        </select>
+        <select id="val-type" class="select" style="min-width:150px;font-size:0.82rem;">
+          <option value="">Semua Jenis</option>
+          <option>Office Building</option><option>Land</option><option>Residential</option>
+          <option>Commercial</option><option>Industrial</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card fade-up">
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr>
+            <th>ID Aset</th><th>Nama Harta</th><th>Jenis</th><th>Lokasi</th>
+            <th style="text-align:right;">Nilai Perolehan</th>
+            <th style="text-align:right;">Nilai Pasaran Semasa</th>
+            <th style="text-align:right;">Perubahan</th>
+            <th>Penilaian Terakhir</th><th>Penilaian Akan Datang</th>
+            <th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="val-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/nav.js"></script>
+<script>initNav('valuation');</script>
+<script>
+const valData=[
+  {id:'AST-2024-001',name:'Bangunan Pejabat Utama',type:'Office Building',location:'Kuala Lumpur',cost:8000000,market:12500000,last:'2024-01-10',next:'2027-01-10',status:'Current'},
+  {id:'AST-2024-002',name:'Tanah Rizab Kerajaan Precinct 8',type:'Land',location:'Putrajaya',cost:20000000,market:35000000,last:'2023-11-15',next:'2026-11-15',status:'Current'},
+  {id:'AST-2024-003',name:'Kompleks Perumahan Pegawai',type:'Residential',location:'Selangor',cost:6500000,market:8200000,last:'2024-03-01',next:'2027-03-01',status:'Current'},
+  {id:'AST-2024-004',name:'Kedai Pejabat Kawasan Industri',type:'Commercial',location:'Johor Bahru',cost:2500000,market:2800000,last:'2023-07-10',next:'2026-07-10',status:'Current'},
+  {id:'AST-2024-005',name:'Gudang Bekalan Strategik',type:'Industrial',location:'Penang',cost:5000000,market:6500000,last:'2024-02-20',next:'2027-02-20',status:'Current'},
+  {id:'AST-2024-006',name:'Tanah Pertanian Hulu Langat',type:'Land',location:'Selangor',cost:8000000,market:15000000,last:'2023-09-05',next:'2026-09-05',status:'Current'},
+  {id:'AST-2024-007',name:'Bangunan Mahkamah Daerah',type:'Office Building',location:'Kuantan',cost:4000000,market:5500000,last:'2021-06-30',next:'2026-06-30',status:'Due Soon'},
+  {id:'AST-2024-008',name:'Klinik Kesihatan Komuniti',type:'Office Building',location:'Ipoh',cost:1500000,market:1800000,last:'2024-01-25',next:'2027-01-25',status:'Current'},
+  {id:'AST-2024-009',name:'Gerai Pasar Awam Daerah',type:'Commercial',location:'Kota Bharu',cost:750000,market:890000,last:'2023-12-12',next:'2026-12-12',status:'Current'},
+  {id:'AST-2024-010',name:'Tapak Projek Perumahan PPR',type:'Land',location:'Kuala Lumpur',cost:15000000,market:28000000,last:'2024-04-01',next:'2027-04-01',status:'Current'},
+  {id:'AST-2024-011',name:'Kompleks Sukan Daerah',type:'Commercial',location:'Shah Alam',cost:7500000,market:9800000,last:'2022-10-20',next:'2025-10-20',status:'Overdue'},
+  {id:'AST-2024-012',name:'Bangunan Arkib Negara Cawangan',type:'Office Building',location:'Putrajaya',cost:9000000,market:11200000,last:'2024-02-08',next:'2027-02-08',status:'Current'},
+  {id:'AST-2024-013',name:'Tanah Rezab Orang Asli',type:'Land',location:'Pahang',cost:3500000,market:4200000,last:'2022-03-15',next:'2025-03-15',status:'Overdue'},
+  {id:'AST-2024-014',name:'Rumah Transit Pekerja Awam',type:'Residential',location:'Kuala Lumpur',cost:5500000,market:7400000,last:'2023-08-20',next:'2026-08-20',status:'Current'},
+  {id:'AST-2024-015',name:'Stor Peralatan JKR',type:'Industrial',location:'Seremban',cost:2000000,market:2100000,last:'2021-09-10',next:'2024-09-10',status:'Overdue'},
+];
+
+function valRender(data){
+  const sm={'Current':'badge-active','Due Soon':'badge-expiring','Overdue':'badge-expired'};
+  const today=new Date();
+  document.getElementById('val-tbody').innerHTML=data.map(v=>{
+    const chg=((v.market-v.cost)/v.cost*100).toFixed(1);
+    const days=Math.round((new Date(v.next)-today)/(864e5));
+    return`<tr>
+      <td><code style="font-size:0.7rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#475569;">${v.id}</code></td>
+      <td class="primary" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${v.name}</td>
+      <td style="font-size:0.78rem;">${v.type}</td>
+      <td style="font-size:0.78rem;color:#64748b;">${v.location}</td>
+      <td style="text-align:right;font-size:0.82rem;">RM ${v.cost.toLocaleString()}</td>
+      <td style="text-align:right;font-weight:700;color:#0f172a;font-size:0.82rem;">RM ${v.market.toLocaleString()}</td>
+      <td style="text-align:right;font-weight:700;color:${parseFloat(chg)>=0?'#059669':'#dc2626'};">${parseFloat(chg)>=0?'+':''}${chg}%</td>
+      <td style="font-size:0.75rem;color:#64748b;white-space:nowrap;">${formatDate(v.last)}</td>
+      <td style="font-size:0.75rem;white-space:nowrap;color:${days<0?'#dc2626':days<90?'#d97706':'#64748b'};">
+        ${formatDate(v.next)}
+        ${days<0?` <span style="font-size:0.68rem;">(tertunggak)</span>`:days<90?` <span style="font-size:0.68rem;">(${days}h)</span>`:''}
+      </td>
+      <td><span class="badge ${sm[v.status]||'badge-inactive'}">${v.status}</span></td>
+      <td><button onclick="valDetail('${v.id}')" class="btn btn-outline btn-xs">Butiran</button></td>
+    </tr>`;
+  }).join('');
+}
+function valApply(){
+  const s=document.getElementById('val-search').value.toLowerCase();
+  const st=document.getElementById('val-status').value;
+  const ty=document.getElementById('val-type').value;
+  valRender(valData.filter(v=>{
+    if(s&&!`${v.id} ${v.name} ${v.location}`.toLowerCase().includes(s))return false;
+    if(st&&v.status!==st)return false;
+    if(ty&&v.type!==ty)return false;
+    return true;
+  }));
+}
+function valDetail(id){
+  const v=valData.find(x=>x.id===id); if(!v)return;
+  const chg=((v.market-v.cost)/v.cost*100).toFixed(1);
+  showToast(`${v.name} — Nilai: RM ${v.market.toLocaleString()} (${parseFloat(chg)>=0?'+':''}${chg}%)`,'info');
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  valRender(valData);
+  ['val-search','val-status','val-type'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('input',valApply);
+    document.getElementById(id)?.addEventListener('change',valApply);
+  });
+});
+</script>
+</body>
+</html>
