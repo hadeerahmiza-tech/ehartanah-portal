@@ -137,7 +137,7 @@
 </div>
 
 <script src="js/nav.js"></script>
-<script>initNav('reports');</script>
+<script>initNav('reports'); guardPage('reports');</script>
 <script>
 function setPeriod(btn, label) {
   document.querySelectorAll('#period-tabs .tab-item').forEach(b => b.classList.remove('active'));

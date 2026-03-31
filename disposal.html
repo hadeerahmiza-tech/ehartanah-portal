@@ -19,7 +19,7 @@
         <h1 class="page-title">Pelupusan Aset</h1>
         <p style="font-size:0.8rem;color:#64748b;margin:2px 0 0;">Pengurusan proses kelulusan pelupusan harta kerajaan</p>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="showToast('Permohonan pelupusan baru — akan datang.','info')">
+      <button class="btn btn-primary btn-sm" data-write-action onclick="showToast('Permohonan pelupusan baru — akan datang.','info')">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
         Permohonan Baru
       </button>
@@ -116,7 +116,7 @@ flowchart TD
 </div>
 
 <script src="js/nav.js"></script>
-<script>initNav('disposal');</script>
+<script>initNav('disposal'); guardPage('disposal');</script>
 <script>
 mermaid.initialize({startOnLoad:true,theme:'neutral',flowchart:{curve:'basis'},fontSize:12});
 const dspData=[

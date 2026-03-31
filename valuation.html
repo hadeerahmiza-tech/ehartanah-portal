@@ -20,7 +20,7 @@
       </div>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-outline btn-sm" onclick="simulateExport('PDF','Laporan_Penilaian')">Export PDF</button>
-        <button class="btn btn-primary btn-sm" onclick="showToast('Tambah rekod penilaian baru — akan datang.','info')">
+        <button class="btn btn-primary btn-sm" data-write-action onclick="showToast('Tambah rekod penilaian baru — akan datang.','info')">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
           Penilaian Baru
         </button>
@@ -90,7 +90,7 @@
 </div>
 
 <script src="js/nav.js"></script>
-<script>initNav('valuation');</script>
+<script>initNav('valuation'); guardPage('valuation');</script>
 <script>
 const valData=[
   {id:'AST-2024-001',name:'Bangunan Pejabat Utama',type:'Office Building',location:'Kuala Lumpur',cost:8000000,market:12500000,last:'2024-01-10',next:'2027-01-10',status:'Current'},

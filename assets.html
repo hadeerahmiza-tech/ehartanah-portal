@@ -26,7 +26,7 @@
           Export PDF
         </button>
         <button class="btn btn-outline btn-sm" onclick="exportAssets('XLSX')">Export Excel</button>
-        <button class="btn btn-primary btn-sm" onclick="showToast('Fungsi tambah aset akan datang.','info')">
+        <button class="btn btn-primary btn-sm" data-write-action onclick="showToast('Fungsi tambah aset akan datang.','info')">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
           Tambah Aset
         </button>
@@ -145,7 +145,7 @@
 </div>
 
 <script src="js/nav.js"></script>
-<script>initNav('assets');</script>
+<script>initNav('assets'); guardPage('assets');</script>
 <script src="js/assets.js"></script>
 <style>@keyframes spin{to{transform:rotate(360deg);}}</style>
 </body>

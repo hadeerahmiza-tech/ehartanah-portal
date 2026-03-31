@@ -1,7 +1,95 @@
 /* ================================================================
-   e-Hartanah Portal — Shared Nav
-   Matches: github.com/mfauzzury/corrad-laravel AdminLayout.vue
+   e-Hartanah Portal — Shared Nav + Role-Based Access Control
    ================================================================ */
+
+/* ─── RBAC — Permission Matrix ───────────────────────────────────
+   pages: dashboard | assets | leasing | maintenance | valuation | disposal | reports
+   levels: 'full' = boleh buat semua | 'view' = lihat sahaja | false = tiada akses
+   ─────────────────────────────────────────────────────────────── */
+const PERMISSIONS = {
+  'Unit Tanah': {
+    dashboard: 'full', assets: 'full', leasing: 'full',
+    maintenance: 'full', valuation: 'full', disposal: 'full', reports: 'full',
+  },
+  'Unit Fasiliti': {
+    dashboard: 'full', assets: 'view', leasing: false,
+    maintenance: 'full', valuation: false, disposal: false, reports: 'view',
+  },
+  'Unit Pajakan': {
+    dashboard: 'full', assets: 'view', leasing: 'full',
+    maintenance: false, valuation: false, disposal: false, reports: 'view',
+  },
+  'Kewangan': {
+    dashboard: 'full', assets: 'view', leasing: 'view',
+    maintenance: 'view', valuation: 'full', disposal: 'full', reports: 'full',
+  },
+  'Undang-undang': {
+    dashboard: 'full', assets: 'view', leasing: 'view',
+    maintenance: false, valuation: 'view', disposal: 'view', reports: 'view',
+  },
+  'Admin': {
+    dashboard: 'full', assets: 'full', leasing: 'full',
+    maintenance: 'full', valuation: 'full', disposal: 'full', reports: 'full',
+  },
+  'Pengurusan': {
+    dashboard: 'full', assets: 'view', leasing: 'view',
+    maintenance: 'view', valuation: 'view', disposal: 'view', reports: 'full',
+  },
+};
+
+/* Get permission level for current user on a page */
+function getPermission(pageId) {
+  const user = getUser();
+  const role = user.role || 'Admin';
+  const perms = PERMISSIONS[role] || PERMISSIONS['Admin'];
+  return perms[pageId] ?? 'view';
+}
+
+/* Can current user edit/add/delete on this page? */
+function canEdit(pageId) {
+  return getPermission(pageId) === 'full';
+}
+
+/* Guard — call at top of each page. Redirects if no access, shows banner if view-only */
+function guardPage(pageId) {
+  const perm = getPermission(pageId);
+  if (perm === false) {
+    /* No access — redirect to dashboard with toast */
+    sessionStorage.setItem('rbac_denied', PAGE_TITLES[pageId] || pageId);
+    window.location.href = 'dashboard.html';
+    return false;
+  }
+  if (perm === 'view') {
+    /* View only — inject read-only banner after topbar renders */
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        const main = document.querySelector('.main > div:nth-child(2)');
+        if (main && !document.getElementById('view-only-banner')) {
+          const banner = document.createElement('div');
+          banner.id = 'view-only-banner';
+          banner.className = 'alert alert-info';
+          banner.style.cssText = 'margin:0 0 16px;font-size:0.82rem;';
+          banner.innerHTML = `
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            <span><strong>Mod Lihat Sahaja</strong> — Peranan anda (<em>${getUser().role}</em>) hanya dibenarkan melihat maklumat di halaman ini. Hubungi pentadbir untuk akses penuh.</span>
+          `;
+          main.insertBefore(banner, main.firstChild);
+        }
+        /* Hide all write-action buttons (static + dynamic via MutationObserver) */
+        function hideWriteActions() {
+          document.querySelectorAll('[data-write-action]').forEach(el => {
+            el.style.display = 'none';
+          });
+        }
+        hideWriteActions();
+        /* Watch for dynamically rendered table rows that add write buttons */
+        const observer = new MutationObserver(hideWriteActions);
+        observer.observe(document.body, { childList: true, subtree: true });
+      }, 100);
+    });
+  }
+  return true;
+}
 
 /* Lucide icon paths — all use stroke-linecap/join="round", stroke-width="1.5" */
 const NAV = [
@@ -44,17 +132,39 @@ function svgIcon(paths, size=16) {
 function initNav(active) {
   const user = getUser();
   const initial = user.name ? user.name.charAt(0).toUpperCase() : 'A';
+  const role = user.role || 'Admin';
+  const perms = PERMISSIONS[role] || PERMISSIONS['Admin'];
+
+  /* Filter nav items by permission — hide pages with false access */
+  function navItem(n) {
+    const perm = perms[n.id];
+    if (perm === false) return ''; /* hidden */
+    const viewOnly = perm === 'view';
+    return `
+      <a href="${n.href}" class="nav-item${active===n.id?' active':''}" style="${viewOnly?'opacity:0.65;':''}" title="${viewOnly?'Lihat sahaja':''}">
+        ${svgIcon(n.icon,16)}
+        <span>${n.label}</span>
+        ${viewOnly ? `<span style="margin-left:auto;font-size:0.6rem;background:#f1f5f9;color:#94a3b8;padding:1px 5px;border-radius:99px;font-weight:600;letter-spacing:0.03em;">LIHAT</span>` : ''}
+      </a>`;
+  }
+
+  /* Show access-denied toast if redirected here */
+  if (active === 'dashboard') {
+    const denied = sessionStorage.getItem('rbac_denied');
+    if (denied) {
+      sessionStorage.removeItem('rbac_denied');
+      setTimeout(() => showToast(`Akses ditolak: ${denied}`, 'error'), 400);
+    }
+  }
 
   /* ── Sidebar ──────────────────────────────────────────────── */
-  /* bg-slate-50/50 border-r border-slate-200, w-64 */
   const sb = document.getElementById('sidebar');
   if (sb) sb.innerHTML = `
     <aside class="sidebar">
 
-      <!-- Logo area: bg-white border-b px-3 py-3 -->
+      <!-- Logo area -->
       <div style="background:#fff;border-bottom:1px solid #e2e8f0;padding:12px;">
         <div style="display:flex;align-items:center;gap:10px;">
-          <!-- Shield icon in gradient square — matches corrad login logo -->
           <div style="width:32px;height:32px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,var(--accent-600),var(--accent-500));display:flex;align-items:center;justify-content:center;">
             ${svgIcon('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>', 16)}
           </div>
@@ -65,21 +175,13 @@ function initNav(active) {
         </div>
       </div>
 
-      <!-- Nav: p-3 -->
+      <!-- Nav -->
       <nav style="flex:1;overflow-y:auto;padding:12px 8px;">
         <p class="nav-section">Menu Utama</p>
-        ${NAV.slice(0,5).map(n=>`
-          <a href="${n.href}" class="nav-item${active===n.id?' active':''}">
-            ${svgIcon(n.icon,16)}
-            <span>${n.label}</span>
-          </a>`).join('')}
+        ${NAV.slice(0,5).map(navItem).join('')}
 
         <p class="nav-section">Pengurusan</p>
-        ${NAV.slice(5).map(n=>`
-          <a href="${n.href}" class="nav-item${active===n.id?' active':''}">
-            ${svgIcon(n.icon,16)}
-            <span>${n.label}</span>
-          </a>`).join('')}
+        ${NAV.slice(5).map(navItem).join('')}
 
         <p class="nav-section">Sistem</p>
         <a href="index.html" class="nav-item" onclick="localStorage.removeItem('ehartanah_user')">
