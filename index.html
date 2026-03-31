@@ -40,8 +40,8 @@
     /* w-full md:w-3/4 lg:w-1/2 xl:w-2/6 */
     .login-col {
       width: 100%;
-      max-width: 420px;
-      padding: 16px;
+      max-width: 560px;
+      padding: 24px 16px;
     }
 
     /* rs-card: h-screen md:h-auto px-10 md:px-16 py-12 md:py-20 mb-0 */
@@ -49,15 +49,18 @@
       background: rgb(var(--bg-2));
       border-radius: var(--rounded-box);
       box-shadow: var(--box-shadow);
-      padding: 48px 64px 80px;
+      padding: 40px 48px 48px;
       text-align: left;
       border: 1px solid rgba(var(--border-color), 0.8);
     }
     @media (max-width: 600px) {
+      .login-col { padding: 0; }
       .rs-card {
         min-height: 100vh;
         border-radius: 0;
-        padding: 48px 40px 64px;
+        border-left: none;
+        border-right: none;
+        padding: 40px 24px 56px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -222,43 +225,69 @@
       text-align: left;
     }
 
+    /* Demo credentials section */
+    .demo-section {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid rgb(var(--border-color));
+    }
+    .demo-section-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin: 0 0 10px;
+    }
+
     /* Demo credentials table */
     .demo-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.75rem;
-      margin-bottom: 20px;
+      font-size: 0.78rem;
       border: 1px solid rgb(var(--border-color));
       border-radius: 0.4rem;
       overflow: hidden;
     }
     .demo-table thead th {
       background: rgb(var(--bg-1));
-      padding: 6px 10px;
+      padding: 7px 12px;
       text-align: left;
       font-weight: 600;
       color: #6b7280;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       border-bottom: 1px solid rgb(var(--border-color));
+      white-space: nowrap;
     }
     .demo-table tbody td {
-      padding: 6px 10px;
+      padding: 7px 12px;
       border-bottom: 1px solid rgb(var(--bg-1));
       color: rgb(var(--color-primary));
       vertical-align: middle;
+      white-space: nowrap;
     }
     .demo-table tbody tr:last-child td { border-bottom: none; }
     .demo-table tbody tr { cursor: pointer; transition: background 0.1s; }
-    .demo-table tbody tr:hover { background: rgb(var(--bg-1)); }
+    .demo-table tbody tr:hover td { background: #f0f9ff; }
     .demo-table .mono {
       font-family: 'Consolas', 'Courier New', monospace;
       font-size: 0.72rem;
       background: rgb(var(--bg-1));
-      padding: 2px 6px;
+      padding: 2px 7px;
       border-radius: 3px;
       color: #374151;
+    }
+    .demo-table .role-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 2px 8px;
+      border-radius: 99px;
+      border: 1px solid #e2e8f0;
     }
 
     /* Sign up link */
@@ -287,57 +316,6 @@
       <!-- h3 + subtitle -->
       <h3>Log Masuk</h3>
       <p>Selamat datang ke e-Hartanah Portal. Sila log masuk untuk teruskan.</p>
-
-      <!-- Demo credentials — click to auto-fill -->
-      <div style="margin-bottom:18px;">
-        <p style="font-size:0.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 6px;">Akaun Demo — klik untuk isi automatik</p>
-        <table class="demo-table">
-          <thead>
-            <tr>
-              <th>Peranan</th>
-              <th>ID Pengguna</th>
-              <th>Kata Laluan</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr onclick="fillCredentials('tanah@ehartanah.gov.my','tanah1234','Unit Tanah')">
-              <td>Unit Tanah</td>
-              <td><span class="mono">tanah@ehartanah.gov.my</span></td>
-              <td><span class="mono">tanah1234</span></td>
-            </tr>
-            <tr onclick="fillCredentials('fasiliti@ehartanah.gov.my','fasiliti1234','Unit Fasiliti')">
-              <td>Unit Fasiliti</td>
-              <td><span class="mono">fasiliti@ehartanah.gov.my</span></td>
-              <td><span class="mono">fasiliti1234</span></td>
-            </tr>
-            <tr onclick="fillCredentials('pajakan@ehartanah.gov.my','pajakan1234','Unit Pajakan')">
-              <td>Unit Pajakan</td>
-              <td><span class="mono">pajakan@ehartanah.gov.my</span></td>
-              <td><span class="mono">pajakan1234</span></td>
-            </tr>
-            <tr onclick="fillCredentials('kewangan@ehartanah.gov.my','kewangan1234','Kewangan')">
-              <td>Kewangan</td>
-              <td><span class="mono">kewangan@ehartanah.gov.my</span></td>
-              <td><span class="mono">kewangan1234</span></td>
-            </tr>
-            <tr onclick="fillCredentials('undang@ehartanah.gov.my','undang1234','Undang-undang')">
-              <td>Undang-undang</td>
-              <td><span class="mono">undang@ehartanah.gov.my</span></td>
-              <td><span class="mono">undang1234</span></td>
-            </tr>
-            <tr onclick="fillCredentials('admin@ehartanah.gov.my','admin1234','Admin')">
-              <td>Admin</td>
-              <td><span class="mono">admin@ehartanah.gov.my</span></td>
-              <td><span class="mono">admin1234</span></td>
-            </tr>
-            <tr onclick="fillCredentials('pengarah@ehartanah.gov.my','pengarah1234','Pengurusan')">
-              <td>Pengarah</td>
-              <td><span class="mono">pengarah@ehartanah.gov.my</span></td>
-              <td><span class="mono">pengarah1234</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
       <!-- Error box -->
       <div class="err-box" id="err">
@@ -402,6 +380,59 @@
         Belum ada akaun?
         <a href="#">Daftar</a>
       </p>
+
+      <!-- Demo credentials — below form, click to auto-fill -->
+      <div class="demo-section">
+        <p class="demo-section-label">Akaun Demo — klik baris untuk log masuk</p>
+        <div style="overflow-x:auto;">
+          <table class="demo-table">
+            <thead>
+              <tr>
+                <th>Peranan</th>
+                <th>ID Pengguna</th>
+                <th>Kata Laluan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="fillCredentials('tanah@ehartanah.gov.my','tanah1234')">
+                <td><span class="role-badge">Unit Tanah</span></td>
+                <td><span class="mono">tanah@ehartanah.gov.my</span></td>
+                <td><span class="mono">tanah1234</span></td>
+              </tr>
+              <tr onclick="fillCredentials('fasiliti@ehartanah.gov.my','fasiliti1234')">
+                <td><span class="role-badge">Unit Fasiliti</span></td>
+                <td><span class="mono">fasiliti@ehartanah.gov.my</span></td>
+                <td><span class="mono">fasiliti1234</span></td>
+              </tr>
+              <tr onclick="fillCredentials('pajakan@ehartanah.gov.my','pajakan1234')">
+                <td><span class="role-badge">Unit Pajakan</span></td>
+                <td><span class="mono">pajakan@ehartanah.gov.my</span></td>
+                <td><span class="mono">pajakan1234</span></td>
+              </tr>
+              <tr onclick="fillCredentials('kewangan@ehartanah.gov.my','kewangan1234')">
+                <td><span class="role-badge">Kewangan</span></td>
+                <td><span class="mono">kewangan@ehartanah.gov.my</span></td>
+                <td><span class="mono">kewangan1234</span></td>
+              </tr>
+              <tr onclick="fillCredentials('undang@ehartanah.gov.my','undang1234')">
+                <td><span class="role-badge">Undang-undang</span></td>
+                <td><span class="mono">undang@ehartanah.gov.my</span></td>
+                <td><span class="mono">undang1234</span></td>
+              </tr>
+              <tr onclick="fillCredentials('admin@ehartanah.gov.my','admin1234')">
+                <td><span class="role-badge">Admin</span></td>
+                <td><span class="mono">admin@ehartanah.gov.my</span></td>
+                <td><span class="mono">admin1234</span></td>
+              </tr>
+              <tr onclick="fillCredentials('pengarah@ehartanah.gov.my','pengarah1234')">
+                <td><span class="role-badge">Pengarah</span></td>
+                <td><span class="mono">pengarah@ehartanah.gov.my</span></td>
+                <td><span class="mono">pengarah1234</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
     </div><!-- /rs-card -->
   </div>
