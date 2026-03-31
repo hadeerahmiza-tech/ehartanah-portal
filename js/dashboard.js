@@ -84,11 +84,11 @@ function renderTypeChart(assets) {
   const counts = {};
   assets.forEach(a => { counts[a.type]=(counts[a.type]||0)+1; });
   const labels = Object.keys(counts);
-  const COLORS = ['#2563eb','#059669','#d97706','#7c3aed','#0d9488','#dc2626'];
+  const COLORS = ['#FF829D','#FFD778','#5EB5EF','#6FCDCD','#ECEDF1','#FF829D'];
   new Chart(document.getElementById('typeChart'), {
     type:'doughnut',
-    data:{ labels, datasets:[{ data:labels.map(l=>counts[l]), backgroundColor:COLORS, borderWidth:2, borderColor:'#fff', hoverOffset:4 }] },
-    options:{ responsive:true, cutout:'65%', plugins:{ legend:{ position:'bottom', labels:{ padding:12, font:{ size:11, weight:'500' }, color:'#475569' }}, tooltip:{ callbacks:{ label:c=>` ${c.label}: ${c.raw} (${Math.round(c.raw/assets.length*100)}%)` }}}}
+    data:{ labels, datasets:[{ data:labels.map(l=>counts[l]), backgroundColor:COLORS.slice(0,labels.length), borderWidth:2, borderColor:'#fff', hoverOffset:6 }] },
+    options:{ responsive:true, cutout:'65%', plugins:{ legend:{ position:'bottom', labels:{ padding:12, font:{ size:11, weight:'500' }, color:'#475569', usePointStyle:true, pointStyleWidth:8 }}, tooltip:{ callbacks:{ label:c=>` ${c.label}: ${c.raw} (${Math.round(c.raw/assets.length*100)}%)` }}}}
   });
 }
 
@@ -97,11 +97,11 @@ function renderStatusChart(assets) {
   const counts = {};
   assets.forEach(a => { counts[a.status]=(counts[a.status]||0)+1; });
   const labels = Object.keys(counts);
-  const COLORS = { 'Active':'#059669','Under Maintenance':'#d97706','Under Valuation':'#7c3aed','Inactive':'#94a3b8','Disposed':'#dc2626' };
+  const PALETTE = ['#5EB5EF','#6FCDCD','#FFD778','#FF829D','#ECEDF1'];
   new Chart(document.getElementById('statusChart'), {
     type:'pie',
-    data:{ labels, datasets:[{ data:labels.map(l=>counts[l]), backgroundColor:labels.map(l=>COLORS[l]||'#94a3b8'), borderWidth:2, borderColor:'#fff' }] },
-    options:{ responsive:true, plugins:{ legend:{ position:'bottom', labels:{ padding:12, font:{ size:11, weight:'500' }, color:'#475569' }}, tooltip:{ callbacks:{ label:c=>` ${c.label}: ${c.raw}` }}}}
+    data:{ labels, datasets:[{ data:labels.map(l=>counts[l]), backgroundColor:labels.map((_,i)=>PALETTE[i%PALETTE.length]), borderWidth:2, borderColor:'#fff', hoverOffset:6 }] },
+    options:{ responsive:true, plugins:{ legend:{ position:'bottom', labels:{ padding:12, font:{ size:11, weight:'500' }, color:'#475569', usePointStyle:true, pointStyleWidth:8 }}, tooltip:{ callbacks:{ label:c=>` ${c.label}: ${c.raw}` }}}}
   });
 }
 
@@ -113,8 +113,8 @@ function renderRentalChart(tenants) {
   data[5] = base;
   new Chart(document.getElementById('rentalChart'), {
     type:'bar',
-    data:{ labels:months, datasets:[{ data, backgroundColor:months.map((_,i)=>i===5?'#2563eb':'#dbeafe'), borderRadius:5, borderSkipped:false }] },
-    options:{ responsive:true, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:c=>` RM ${c.raw.toLocaleString()}` }}}, scales:{ y:{ beginAtZero:true, grid:{ color:'#f1f5f9' }, ticks:{ color:'#94a3b8', font:{ size:11 }, callback:v=>'RM '+(v/1000).toFixed(0)+'K' }}, x:{ grid:{ display:false }, ticks:{ color:'#94a3b8', font:{ size:11 } }}}}
+    data:{ labels:months, datasets:[{ data, backgroundColor:months.map((_,i)=>i===5?'#5EB5EF':'rgba(94,181,239,0.35)'), borderRadius:6, borderSkipped:false }] },
+    options:{ responsive:true, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:c=>` RM ${c.raw.toLocaleString()}` }}}, scales:{ y:{ beginAtZero:true, grid:{ color:'#f1f5f9' }, border:{ display:false }, ticks:{ color:'#94a3b8', font:{ size:11 }, callback:v=>'RM '+(v/1000).toFixed(0)+'K' }}, x:{ grid:{ display:false }, border:{ display:false }, ticks:{ color:'#94a3b8', font:{ size:11 } }}}}
   });
 }
 
@@ -126,10 +126,10 @@ function renderMaintChart(maint) {
   new Chart(document.getElementById('maintChart'), {
     type:'line',
     data:{ labels:months, datasets:[
-      { label:'Kos Sebenar', data:actual, borderColor:'#dc2626', backgroundColor:'rgba(220,38,38,0.06)', tension:0.4, fill:true, pointRadius:3, pointBackgroundColor:'#dc2626', borderWidth:2 },
-      { label:'Bajet', data:budget, borderColor:'#059669', borderDash:[5,4], backgroundColor:'transparent', tension:0, pointRadius:0, borderWidth:1.5 }
+      { label:'Kos Sebenar', data:actual, borderColor:'#FF829D', backgroundColor:'rgba(255,130,157,0.1)', tension:0.4, fill:true, pointRadius:4, pointBackgroundColor:'#FF829D', pointBorderColor:'#fff', pointBorderWidth:2, borderWidth:2 },
+      { label:'Bajet', data:budget, borderColor:'#6FCDCD', borderDash:[5,4], backgroundColor:'transparent', tension:0, pointRadius:0, borderWidth:2 }
     ]},
-    options:{ responsive:true, plugins:{ legend:{ position:'top', labels:{ font:{ size:11 }, color:'#475569', padding:12 }}, tooltip:{ callbacks:{ label:c=>` ${c.dataset.label}: RM ${c.raw.toLocaleString()}` }}}, scales:{ y:{ beginAtZero:true, grid:{ color:'#f1f5f9' }, ticks:{ color:'#94a3b8', font:{ size:11 }, callback:v=>'RM '+(v/1000).toFixed(0)+'K' }}, x:{ grid:{ display:false }, ticks:{ color:'#94a3b8', font:{ size:11 } }}}}
+    options:{ responsive:true, plugins:{ legend:{ position:'top', labels:{ font:{ size:11 }, color:'#475569', padding:12, usePointStyle:true, pointStyleWidth:8 }}, tooltip:{ callbacks:{ label:c=>` ${c.dataset.label}: RM ${c.raw.toLocaleString()}` }}}, scales:{ y:{ beginAtZero:true, grid:{ color:'#f1f5f9' }, border:{ display:false }, ticks:{ color:'#94a3b8', font:{ size:11 }, callback:v=>'RM '+(v/1000).toFixed(0)+'K' }}, x:{ grid:{ display:false }, border:{ display:false }, ticks:{ color:'#94a3b8', font:{ size:11 } }}}}
   });
 }
 
