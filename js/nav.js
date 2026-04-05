@@ -95,7 +95,7 @@ function guardPage(pageId) {
 const NAV = [
   { id:'dashboard',   label:'Dashboard',        href:'dashboard.html',
     icon:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>' },
-  { id:'assets',      label:'Pengurusan Aset',  href:'assets.html',
+  { id:'assets',      label:'Hak Milik Aset',  href:'assets.html',
     /* Building2 */
     icon:'<path d="M6 22V4a2 2 0 012-2h8a2 2 0 012 2v18"/><path d="M6 12H4a2 2 0 00-2 2v6a2 2 0 002 2h2"/><path d="M18 9h2a2 2 0 012 2v9a2 2 0 01-2 2h-2"/><path d="M10 6h4M10 10h4M10 14h4M10 18h4"/>' },
   { id:'leasing',     label:'Pajakan & Sewa',   href:'leasing.html',
@@ -116,7 +116,7 @@ const NAV = [
 ];
 
 const PAGE_TITLES = {
-  dashboard:'Dashboard', assets:'Pengurusan Aset', leasing:'Pajakan & Penyewaan',
+  dashboard:'Dashboard', assets:'Hak Milik Aset', leasing:'Pajakan & Penyewaan',
   maintenance:'Penyelenggaraan', valuation:'Penilaian Harta',
   disposal:'Pelupusan Aset', reports:'Laporan & Analitik',
 };
