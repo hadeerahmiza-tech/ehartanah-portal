@@ -2,24 +2,34 @@
    e-Hartanah Portal — Map Utilities (Leaflet.js)
    ================================================================ */
 
-// Asset coordinates (mock demo data — in production, use actual lat/lng)
-const ASSET_LOCATIONS = {
-  'AST-001': {lat:3.1390,lng:101.6869,name:'Bangunan Pejabat Utama, Lot 3A',loc:'Kuala Lumpur'},
-  'AST-002': {lat:2.7258,lng:101.6964,name:'Tanah Rizab Kerajaan Precinct 8',loc:'Putrajaya'},
-  'AST-003': {lat:3.0573,lng:101.5243,name:'Kompleks Perumahan Pegawai',loc:'Selangor'},
-  'AST-004': {lat:1.4854,lng:103.7618,name:'Kedai Pejabat Kawasan Industri',loc:'Johor Bahru'},
-  'AST-005': {lat:5.4164,lng:100.3377,name:'Gudang Bekalan Strategik',loc:'Penang'},
-  'AST-006': {lat:2.9264,lng:101.5244,name:'Tanah Pertanian Hulu Langat',loc:'Selangor'},
-  'AST-007': {lat:3.8048,lng:103.3256,name:'Bangunan Mahkamah Daerah',loc:'Kuantan'},
-  'AST-008': {lat:4.5975,lng:101.4858,name:'Klinik Kesihatan Komuniti',loc:'Ipoh'},
-  'AST-009': {lat:6.1256,lng:102.1381,name:'Gerai Pasar Awam Daerah',loc:'Kota Bharu'},
-  'AST-010': {lat:3.1390,lng:101.5880,name:'Tapak Projek Perumahan PPR',loc:'Kuala Lumpur'},
-  'AST-011': {lat:3.0731,lng:101.5501,name:'Kompleks Sukan Daerah',loc:'Shah Alam'},
-  'AST-012': {lat:2.7258,lng:101.6964,name:'Bangunan Arkib Negara Cawangan',loc:'Putrajaya'},
-  'AST-013': {lat:4.2088,lng:103.3256,name:'Tanah Rezab Orang Asli',loc:'Pahang'},
-  'AST-014': {lat:3.1390,lng:101.6869,name:'Rumah Transit Pekerja Awam',loc:'Kuala Lumpur'},
-  'AST-015': {lat:2.7286,lng:101.9424,name:'Stor Peralatan JKR',loc:'Seremban'},
+// Asset coordinates (mock demo data — in production, use actual lat/lng from asset table)
+const CITY_COORDS = {
+  'Kuala Lumpur': {lat:3.1390,lng:101.6869},
+  'Putrajaya': {lat:2.7258,lng:101.6964},
+  'Selangor': {lat:3.0573,lng:101.5243},
+  'Johor Bahru': {lat:1.4854,lng:103.7618},
+  'Penang': {lat:5.4164,lng:100.3377},
+  'Ipoh': {lat:4.5975,lng:101.4858},
+  'Kuantan': {lat:3.8048,lng:103.3256},
+  'Kota Bharu': {lat:6.1256,lng:102.1381},
+  'Shah Alam': {lat:3.0731,lng:101.5501},
+  'Pahang': {lat:3.9786,lng:102.7391},
+  'Seremban': {lat:2.7286,lng:101.9424},
 };
+
+function getAssetLocation(asset) {
+  // Look up coordinates by city from CITY_COORDS
+  const coords = CITY_COORDS[asset.location];
+  if (!coords) return null;
+
+  // Add small random offset so overlapping assets spread out
+  const offset = Math.random() * 0.02 - 0.01;
+  return {
+    lat: coords.lat + offset,
+    lng: coords.lng + offset,
+    loc: asset.location
+  };
+}
 
 // Marker colors by status
 const STATUS_COLORS = {
@@ -37,7 +47,7 @@ function getMarkerColor(status) {
 }
 
 function createMarker(asset, map) {
-  const loc = ASSET_LOCATIONS[asset.id];
+  const loc = getAssetLocation(asset);
   if (!loc) return null;
 
   const color = getMarkerColor(asset.status);
@@ -150,26 +160,27 @@ function renderLeasingMap(tenants) {
     propertyMap[prop].push(tenant);
   });
 
-  Object.keys(propertyMap).forEach(propName => {
+  Object.keys(propertyMap).forEach((propName, idx) => {
     const tenantList = propertyMap[propName];
     const firstTenant = tenantList[0];
 
-    // Create a simplified asset object for marker rendering
-    const assetLike = {
-      id: `LEASE-${Object.keys(propertyMap).indexOf(propName)}`,
-      name: propName,
-      address: propName,
-      type: firstTenant.type,
-      status: firstTenant.status,
-      value: firstTenant.rental * 12, // annual rental value
-      taxtaxNo: '—',
-      doortaxNo: '—'
-    };
+    // Use a city-based location (assuming property name includes city context)
+    // Default to KL if no match found
+    let cityKey = 'Kuala Lumpur';
+    for (const city of Object.keys(CITY_COORDS)) {
+      if (propName.toLowerCase().includes(city.toLowerCase())) {
+        cityKey = city;
+        break;
+      }
+    }
 
-    // Use a location from ASSET_LOCATIONS if available, otherwise randomize near KL
-    const firstAssetLoc = Object.values(ASSET_LOCATIONS)[Object.keys(propertyMap).indexOf(propName) % Object.keys(ASSET_LOCATIONS).length];
-    const loc = firstAssetLoc || {lat: 3.1390 + (Math.random()-0.5)*0.5, lng: 101.6869 + (Math.random()-0.5)*0.5, loc: 'Malaysia'};
-    ASSET_LOCATIONS[assetLike.id] = loc;
+    const coords = CITY_COORDS[cityKey];
+    const offset = Math.random() * 0.02 - 0.01;
+    const loc = {
+      lat: coords.lat + offset,
+      lng: coords.lng + offset,
+      loc: cityKey
+    };
 
     const color = STATUS_COLORS[firstTenant.status] || '#64748b';
     const html = `
@@ -229,20 +240,22 @@ function renderMaintenanceMap(maintenance) {
     const mntList = propertyMap[propName];
     const firstMnt = mntList[0];
 
-    const assetLike = {
-      id: `MNT-${idx}`,
-      name: propName,
-      address: propName,
-      type: firstMnt.category,
-      status: firstMnt.status,
-      value: firstMnt.estimatedCost,
-      taxtaxNo: '—',
-      doortaxNo: '—'
-    };
+    // Look up city from property name
+    let cityKey = 'Kuala Lumpur';
+    for (const city of Object.keys(CITY_COORDS)) {
+      if (propName.toLowerCase().includes(city.toLowerCase())) {
+        cityKey = city;
+        break;
+      }
+    }
 
-    const firstAssetLoc = Object.values(ASSET_LOCATIONS)[idx % Object.keys(ASSET_LOCATIONS).length];
-    const loc = firstAssetLoc || {lat: 3.1390 + (Math.random()-0.5)*0.5, lng: 101.6869 + (Math.random()-0.5)*0.5, loc: 'Malaysia'};
-    ASSET_LOCATIONS[assetLike.id] = loc;
+    const coords = CITY_COORDS[cityKey];
+    const offset = Math.random() * 0.02 - 0.01;
+    const loc = {
+      lat: coords.lat + offset,
+      lng: coords.lng + offset,
+      loc: cityKey
+    };
 
     const statusForColor = firstMnt.status==='Completed'?'Active':firstMnt.priority==='High'?'Under Maintenance':'Active';
     const color = getMarkerColor(statusForColor);
@@ -290,20 +303,15 @@ function renderValuationMap(valuations) {
   }).addTo(map);
 
   valuations.forEach((val, idx) => {
-    const assetLike = {
-      id: val.id,
-      name: val.name,
-      address: val.location,
-      type: val.type,
-      status: val.status,
-      value: val.market,
-      taxtaxNo: '—',
-      doortaxNo: '—'
+    // Look up city coordinates
+    const cityKey = val.location;
+    const coords = CITY_COORDS[cityKey] || CITY_COORDS['Kuala Lumpur'];
+    const offset = Math.random() * 0.02 - 0.01;
+    const loc = {
+      lat: coords.lat + offset,
+      lng: coords.lng + offset,
+      loc: val.location
     };
-
-    const firstAssetLoc = Object.values(ASSET_LOCATIONS)[idx % Object.keys(ASSET_LOCATIONS).length];
-    const loc = firstAssetLoc || {lat: 3.1390 + (Math.random()-0.5)*0.5, lng: 101.6869 + (Math.random()-0.5)*0.5, loc: val.location};
-    ASSET_LOCATIONS[assetLike.id] = loc;
 
     // Color based on valuation status
     const statusForColor = val.status==='Overdue'?'Inactive':val.status==='Due Soon'?'Under Valuation':'Active';
