@@ -22,7 +22,6 @@ function render(assets, tenants, maint) {
   renderRentalChart(tenants);
   renderMaintChart(maint);
   renderActivity(tenants, maint);
-  renderAssetMap(assets);
 }
 
 /* ── KPIs ── */
@@ -132,101 +131,6 @@ function renderMaintChart(maint) {
     ]},
     options:{ responsive:true, plugins:{ legend:{ position:'top', labels:{ font:{ size:11 }, color:'#475569', padding:12, usePointStyle:true, pointStyleWidth:8 }}, tooltip:{ callbacks:{ label:c=>` ${c.dataset.label}: RM ${c.raw.toLocaleString()}` }}}, scales:{ y:{ beginAtZero:true, grid:{ color:'#f1f5f9' }, border:{ display:false }, ticks:{ color:'#94a3b8', font:{ size:11 }, callback:v=>'RM '+(v/1000).toFixed(0)+'K' }}, x:{ grid:{ display:false }, border:{ display:false }, ticks:{ color:'#94a3b8', font:{ size:11 } }}}}
   });
-}
-
-/* ── Asset Map (MAIWP) ── */
-function renderAssetMap(assets) {
-  /* Filter MAIWP assets (KL, Selangor, Putrajaya) */
-  const maiwpAssets = assets.filter(a =>
-    ['Kuala Lumpur','Selangor','Putrajaya'].includes(a.location)
-  );
-
-  document.getElementById('asset-count').textContent = `${maiwpAssets.length} aset`;
-
-  /* Coordinates for demo assets (approximate center of locations) */
-  const coords = {
-    'Kuala Lumpur': [3.1390, 101.6869],
-    'Selangor': [2.8962, 101.5244],
-    'Putrajaya': [2.7258, 101.6964],
-  };
-
-  /* Initialize map centered on MAIWP */
-  const map = L.map('dashboard-map').setView([2.85, 101.65], 10);
-
-  /* Tile layer */
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 19,
-  }).addTo(map);
-
-  /* Add markers for each asset */
-  const markers = L.markerClusterGroup();
-
-  maiwpAssets.forEach((a, idx) => {
-    const [lat, lng] = coords[a.location] || [2.85, 101.65];
-    /* Add slight random offset to avoid exact overlap */
-    const jitter = 0.02;
-    const markerLat = lat + (Math.random() - 0.5) * jitter;
-    const markerLng = lng + (Math.random() - 0.5) * jitter;
-
-    /* Color by status */
-    const statusColors = {
-      'Active': '#059669',
-      'Under Maintenance': '#d97706',
-      'Under Valuation': '#7c3aed',
-      'Inactive': '#94a3b8',
-      'Disposed': '#dc2626',
-    };
-    const color = statusColors[a.status] || '#94a3b8';
-
-    /* Marker icon */
-    const markerIcon = L.divIcon({
-      html: `<div style="width:32px;height:32px;background:${color};border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2);">${idx+1}</div>`,
-      iconSize: [32, 32],
-      className: 'asset-marker',
-    });
-
-    const marker = L.marker([markerLat, markerLng], { icon: markerIcon });
-
-    /* Popup with asset info */
-    const popupHtml = `
-      <div style="font-size:0.8rem;min-width:200px;">
-        <p style="font-weight:700;color:#0f172a;margin:0 0 4px;">${a.name}</p>
-        <p style="color:#475569;margin:0 0 8px;font-size:0.75rem;">${a.location}</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.72rem;margin-bottom:8px;">
-          <div><span style="color:#94a3b8;font-weight:600;">Jenis:</span><br/>${a.type}</div>
-          <div><span style="color:#94a3b8;font-weight:600;">Status:</span><br/><span style="color:${color};font-weight:600;">${a.status}</span></div>
-          <div><span style="color:#94a3b8;font-weight:600;">Nilai:</span><br/>RM ${(a.value/1e6).toFixed(1)}M</div>
-          <div><span style="color:#94a3b8;font-weight:600;">CT:</span><br/><code style="font-size:0.65rem;">${a.taxtaxNo||'—'}</code></div>
-          <div style="grid-column:1/-1;"><span style="color:#94a3b8;font-weight:600;">CP:</span><br/><code style="font-size:0.65rem;">${a.doortaxNo||'—'}</code></div>
-        </div>
-        <a href="assets.html" style="display:inline-block;padding:4px 8px;background:#2563eb;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;font-size:0.7rem;cursor:pointer;">Lihat Butiran →</a>
-      </div>
-    `;
-    marker.bindPopup(popupHtml);
-    markers.addLayer(marker);
-  });
-
-  map.addLayer(markers);
-
-  /* Legend */
-  const legend = L.control({ position: 'bottomright' });
-  legend.onAdd = () => {
-    const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar' );
-    div.innerHTML = `
-      <div style="background:#fff;padding:12px;border-radius:6px;font-size:0.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-        <p style="font-weight:700;margin:0 0 8px;color:#0f172a;">Status Aset</p>
-        <div style="display:flex;flex-direction:column;gap:4px;">
-          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#059669;border-radius:50%;"></span><span>Aktif</span></div>
-          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#d97706;border-radius:50%;"></span><span>Penyelenggaraan</span></div>
-          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#7c3aed;border-radius:50%;"></span><span>Penilaian</span></div>
-          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#94a3b8;border-radius:50%;"></span><span>Tidak Aktif</span></div>
-        </div>
-      </div>
-    `;
-    return div;
-  };
-  legend.addTo(map);
 }
 
 /* ── Recent Activity ── */

@@ -5,7 +5,9 @@
   <title>Pajakan & Sewa — e-Hartanah Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="css/styles.css">
-  <style>body{background:#f8fafc;} .main{margin-left:256px;min-height:100vh;background:#fff;}</style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>body{background:#f8fafc;} .main{margin-left:256px;min-height:100vh;background:#fff;} .map-container{width:100%;height:400px;border-radius:6px;}</style>
 </head>
 <body>
 <div id="sidebar"></div>
@@ -54,6 +56,17 @@
         <p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0 0 2px;" id="ls-income">—</p>
         <p style="font-size:0.72rem;color:#64748b;margin:0;font-weight:500;">Sewa/Bulan</p>
       </div>
+    </div>
+
+    <!-- Map section -->
+    <div class="card fade-up" style="margin-bottom:14px;">
+      <div class="card-header">
+        <span class="card-title">
+          <svg width="14" height="14" fill="none" stroke="#2563eb" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 003 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6.553 3.276A1 1 0 0017 20.382V9.618a1 1 0 00-1.447-.894L9 11m0 13V11m6.553 3.276L21 4m0 0l-5.447-2.724A1 1 0 0015 2.382V13m6-7.618V16.382a1 1 0 01-1.447.894L15 13"/></svg>
+          Peta Aset Pajakan & Sewa
+        </span>
+      </div>
+      <div id="leasing-map" class="map-container" style="margin:12px;"></div>
     </div>
 
     <!-- Warning banner -->
@@ -117,6 +130,7 @@
 </div>
 
 <script src="js/nav.js"></script>
+<script src="js/map-utils.js"></script>
 <script>initNav('leasing'); guardPage('leasing');</script>
 <script>
 let allTenants=[];
@@ -219,6 +233,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('ls-search')?.addEventListener('input',lsApply);
   ['ls-status','ls-type'].forEach(id=>document.getElementById(id)?.addEventListener('change',lsApply));
   document.getElementById('ls-modal')?.addEventListener('click',e=>{if(e.target.id==='ls-modal')e.target.classList.remove('open');});
+  setTimeout(()=>renderLeasingMap(allTenants),500);
 });
 </script>
 </body>

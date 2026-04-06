@@ -13,6 +13,7 @@ async function loadAssets() {
   filtered = [...allAssets];
   renderStats();
   renderTable();
+  setTimeout(() => renderAssetMap(allAssets), 200);
 }
 
 function renderStats() {
