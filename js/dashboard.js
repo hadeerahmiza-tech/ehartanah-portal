@@ -22,6 +22,7 @@ function render(assets, tenants, maint) {
   renderRentalChart(tenants);
   renderMaintChart(maint);
   renderActivity(tenants, maint);
+  renderAssetMap(assets);
 }
 
 /* ── KPIs ── */
@@ -133,6 +134,101 @@ function renderMaintChart(maint) {
   });
 }
 
+/* ── Asset Map (MAIWP) ── */
+function renderAssetMap(assets) {
+  /* Filter MAIWP assets (KL, Selangor, Putrajaya) */
+  const maiwpAssets = assets.filter(a =>
+    ['Kuala Lumpur','Selangor','Putrajaya'].includes(a.location)
+  );
+
+  document.getElementById('asset-count').textContent = `${maiwpAssets.length} aset`;
+
+  /* Coordinates for demo assets (approximate center of locations) */
+  const coords = {
+    'Kuala Lumpur': [3.1390, 101.6869],
+    'Selangor': [2.8962, 101.5244],
+    'Putrajaya': [2.7258, 101.6964],
+  };
+
+  /* Initialize map centered on MAIWP */
+  const map = L.map('dashboard-map').setView([2.85, 101.65], 10);
+
+  /* Tile layer */
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19,
+  }).addTo(map);
+
+  /* Add markers for each asset */
+  const markers = L.markerClusterGroup();
+
+  maiwpAssets.forEach((a, idx) => {
+    const [lat, lng] = coords[a.location] || [2.85, 101.65];
+    /* Add slight random offset to avoid exact overlap */
+    const jitter = 0.02;
+    const markerLat = lat + (Math.random() - 0.5) * jitter;
+    const markerLng = lng + (Math.random() - 0.5) * jitter;
+
+    /* Color by status */
+    const statusColors = {
+      'Active': '#059669',
+      'Under Maintenance': '#d97706',
+      'Under Valuation': '#7c3aed',
+      'Inactive': '#94a3b8',
+      'Disposed': '#dc2626',
+    };
+    const color = statusColors[a.status] || '#94a3b8';
+
+    /* Marker icon */
+    const markerIcon = L.divIcon({
+      html: `<div style="width:32px;height:32px;background:${color};border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2);">${idx+1}</div>`,
+      iconSize: [32, 32],
+      className: 'asset-marker',
+    });
+
+    const marker = L.marker([markerLat, markerLng], { icon: markerIcon });
+
+    /* Popup with asset info */
+    const popupHtml = `
+      <div style="font-size:0.8rem;min-width:200px;">
+        <p style="font-weight:700;color:#0f172a;margin:0 0 4px;">${a.name}</p>
+        <p style="color:#475569;margin:0 0 8px;font-size:0.75rem;">${a.location}</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.72rem;margin-bottom:8px;">
+          <div><span style="color:#94a3b8;font-weight:600;">Jenis:</span><br/>${a.type}</div>
+          <div><span style="color:#94a3b8;font-weight:600;">Status:</span><br/><span style="color:${color};font-weight:600;">${a.status}</span></div>
+          <div><span style="color:#94a3b8;font-weight:600;">Nilai:</span><br/>RM ${(a.value/1e6).toFixed(1)}M</div>
+          <div><span style="color:#94a3b8;font-weight:600;">CT:</span><br/><code style="font-size:0.65rem;">${a.taxtaxNo||'—'}</code></div>
+          <div style="grid-column:1/-1;"><span style="color:#94a3b8;font-weight:600;">CP:</span><br/><code style="font-size:0.65rem;">${a.doortaxNo||'—'}</code></div>
+        </div>
+        <a href="assets.html" style="display:inline-block;padding:4px 8px;background:#2563eb;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;font-size:0.7rem;cursor:pointer;">Lihat Butiran →</a>
+      </div>
+    `;
+    marker.bindPopup(popupHtml);
+    markers.addLayer(marker);
+  });
+
+  map.addLayer(markers);
+
+  /* Legend */
+  const legend = L.control({ position: 'bottomright' });
+  legend.onAdd = () => {
+    const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar' );
+    div.innerHTML = `
+      <div style="background:#fff;padding:12px;border-radius:6px;font-size:0.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+        <p style="font-weight:700;margin:0 0 8px;color:#0f172a;">Status Aset</p>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#059669;border-radius:50%;"></span><span>Aktif</span></div>
+          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#d97706;border-radius:50%;"></span><span>Penyelenggaraan</span></div>
+          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#7c3aed;border-radius:50%;"></span><span>Penilaian</span></div>
+          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#94a3b8;border-radius:50%;"></span><span>Tidak Aktif</span></div>
+        </div>
+      </div>
+    `;
+    return div;
+  };
+  legend.addTo(map);
+}
+
 /* ── Recent Activity ── */
 function renderActivity(tenants, maint) {
   const rows = [
@@ -154,14 +250,21 @@ function renderActivity(tenants, maint) {
 /* ── Demo data fallbacks ── */
 function demoAssets() {
   return [
-    {value:12500000,type:'Office Building',status:'Active'},{value:35000000,type:'Land',status:'Active'},
-    {value:8200000,type:'Residential',status:'Active'},{value:2800000,type:'Commercial',status:'Under Maintenance'},
-    {value:6500000,type:'Industrial',status:'Active'},{value:15000000,type:'Land',status:'Active'},
-    {value:5500000,type:'Office Building',status:'Under Valuation'},{value:1800000,type:'Office Building',status:'Active'},
-    {value:890000,type:'Commercial',status:'Active'},{value:28000000,type:'Land',status:'Active'},
-    {value:9800000,type:'Commercial',status:'Under Maintenance'},{value:11200000,type:'Office Building',status:'Active'},
-    {value:4200000,type:'Land',status:'Active'},{value:7400000,type:'Residential',status:'Active'},
-    {value:2100000,type:'Industrial',status:'Inactive'},
+    {id:'AST-2024-001',name:'Bangunan Pejabat Utama',value:12500000,type:'Office Building',status:'Active',location:'Kuala Lumpur',taxtaxNo:'CT-KL-2024-001234',doortaxNo:'CP-KL-2024-005678'},
+    {id:'AST-2024-002',name:'Tanah Rizab Kerajaan',value:35000000,type:'Land',status:'Active',location:'Putrajaya',taxtaxNo:'CT-PJ-2024-002456',doortaxNo:'CP-PJ-2024-007890'},
+    {id:'AST-2024-003',name:'Kompleks Perumahan Pegawai',value:8200000,type:'Residential',status:'Active',location:'Selangor',taxtaxNo:'CT-SLG-2024-003678',doortaxNo:'CP-SLG-2024-009012'},
+    {id:'AST-2024-004',name:'Kedai Pejabat Kawasan Industri',value:2800000,type:'Commercial',status:'Under Maintenance',location:'Johor Bahru',taxtaxNo:'CT-JHR-2024-004890',doortaxNo:'CP-JHR-2024-001234'},
+    {id:'AST-2024-005',name:'Gudang Bekalan Strategik',value:6500000,type:'Industrial',status:'Active',location:'Penang',taxtaxNo:'CT-PNG-2024-005012',doortaxNo:'CP-PNG-2024-003456'},
+    {id:'AST-2024-006',name:'Tanah Pertanian Hulu Langat',value:15000000,type:'Land',status:'Active',location:'Selangor',taxtaxNo:'CT-SLG-2024-006234',doortaxNo:'CP-SLG-2024-005678'},
+    {id:'AST-2024-007',name:'Bangunan Mahkamah Daerah',value:5500000,type:'Office Building',status:'Under Valuation',location:'Kuantan',taxtaxNo:'CT-PNG-2024-007456',doortaxNo:'CP-PNG-2024-007890'},
+    {id:'AST-2024-008',name:'Klinik Kesihatan Komuniti',value:1800000,type:'Office Building',status:'Active',location:'Ipoh',taxtaxNo:'CT-PRK-2024-008678',doortaxNo:'CP-PRK-2024-009012'},
+    {id:'AST-2024-009',name:'Gerai Pasar Awam Daerah',value:890000,type:'Commercial',status:'Active',location:'Kota Bharu',taxtaxNo:'CT-KTN-2024-009890',doortaxNo:'CP-KTN-2024-001234'},
+    {id:'AST-2024-010',name:'Tapak Projek Perumahan PPR',value:28000000,type:'Land',status:'Active',location:'Kuala Lumpur',taxtaxNo:'CT-KL-2024-010012',doortaxNo:'CP-KL-2024-003456'},
+    {id:'AST-2024-011',name:'Kompleks Sukan Daerah',value:9800000,type:'Commercial',status:'Under Maintenance',location:'Shah Alam',taxtaxNo:'CT-SLG-2024-011234',doortaxNo:'CP-SLG-2024-007890'},
+    {id:'AST-2024-012',name:'Bangunan Arkib Negara Cawangan',value:11200000,type:'Office Building',status:'Active',location:'Putrajaya',taxtaxNo:'CT-PJ-2024-012456',doortaxNo:'CP-PJ-2024-009012'},
+    {id:'AST-2024-013',name:'Tanah Rezab Orang Asli',value:4200000,type:'Land',status:'Active',location:'Pahang',taxtaxNo:'CT-PHG-2024-013678',doortaxNo:'CP-PHG-2024-001234'},
+    {id:'AST-2024-014',name:'Rumah Transit Pekerja Awam',value:7400000,type:'Residential',status:'Active',location:'Kuala Lumpur',taxtaxNo:'CT-KL-2024-014890',doortaxNo:'CP-KL-2024-005678'},
+    {id:'AST-2024-015',name:'Stor Peralatan JKR',value:2100000,type:'Industrial',status:'Inactive',location:'Seremban',taxtaxNo:'CT-NGS-2024-015012',doortaxNo:'CP-NGS-2024-003456'},
   ];
 }
 function demoTenants() {
