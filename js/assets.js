@@ -141,27 +141,76 @@ function sortBy(col) {
 function viewAsset(id) {
   const a = allAssets.find(x=>x.id===id);
   if (!a) return;
+
+  /* Tax payment status indicator */
+  const taxReminder = () => {
+    const paymentDate = new Date(a.taxPaymentDate || '');
+    const today = new Date();
+    const daysUntil = Math.ceil((paymentDate - today) / (1000 * 60 * 60 * 24));
+    if (daysUntil < 0) return `<span style="color:#dc2626;font-weight:600;">TERTUNGGAK (${Math.abs(daysUntil)} hari)</span>`;
+    if (daysUntil <= 30) return `<span style="color:#d97706;font-weight:600;">Dalam ${daysUntil} hari lagi</span>`;
+    return `<span style="color:#059669;font-weight:500;">Dibayar (${formatDate(paymentDate)})</span>`;
+  };
+
   document.getElementById('modal-content').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      ${[
-        ['ID Aset', `<code style="font-size:0.8rem;background:#f1f5f9;padding:2px 8px;border-radius:4px;">${a.id}</code>`],
-        ['Status', statusBadge(a.status)],
-        ['Nama Aset', `<span style="font-weight:600;">${a.name}</span>`],
-        ['Jenis', a.type],
-        ['Jenis Pemilikan', statusBadge(a.ownershipType)],
-        ['Sumber Dana', statusBadge(a.fundSource)],
-        ['Lokasi', a.location],
-        ['Alamat', a.address],
-        ['Keluasan', a.area],
-        ['Nilai Harta', `<span style="font-weight:700;color:#2563eb;">RM ${a.value.toLocaleString()}</span>`],
-        ['Tarikh Perolehan', formatDate(a.acquiredDate)],
-        ['Penilaian Terakhir', a.lastValuation?formatDate(a.lastValuation):'—'],
-      ].map(([l,v])=>`
-        <div>
-          <p style="font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;margin:0 0 3px;">${l}</p>
-          <p style="font-size:0.82rem;color:#0f172a;margin:0;">${v}</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <!-- Left: Basic Info -->
+      <div style="border-right:1px solid #f1f5f9;padding-right:16px;">
+        <p style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 12px;">Maklumat Aset</p>
+        ${[
+          ['ID Aset', `<code style="font-size:0.8rem;background:#f1f5f9;padding:2px 8px;border-radius:4px;">${a.id}</code>`],
+          ['Nama Aset', `<span style="font-weight:600;">${a.name}</span>`],
+          ['Jenis', a.type],
+          ['Status', statusBadge(a.status)],
+          ['Jenis Pemilikan', statusBadge(a.ownershipType)],
+          ['Sumber Dana', statusBadge(a.fundSource)],
+          ['Keluasan', a.area],
+          ['Nilai Harta', `<span style="font-weight:700;color:#2563eb;">RM ${a.value.toLocaleString()}</span>`],
+          ['Tarikh Perolehan', formatDate(a.acquiredDate)],
+          ['Penilaian Terakhir', a.lastValuation?formatDate(a.lastValuation):'—'],
+        ].map(([l,v])=>`
+          <div style="margin-bottom:8px;">
+            <p style="font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;margin:0 0 2px;">${l}</p>
+            <p style="font-size:0.82rem;color:#0f172a;margin:0;">${v}</p>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Right: Location & Tax Info -->
+      <div style="padding-left:16px;">
+        <p style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 12px;">Lokasi & Cukai</p>
+
+        <!-- Map Link -->
+        <div style="margin-bottom:12px;padding:10px;background:#f0f9ff;border:1px solid #bfdbfe;border-radius:6px;">
+          <p style="font-size:0.68rem;font-weight:600;color:#1e40af;margin:0 0 6px;text-transform:uppercase;">📍 Lokasi Peta</p>
+          <p style="font-size:0.78rem;color:#0c1a3d;margin:0 0 8px;font-weight:500;">${a.location}</p>
+          <a href="https://maps.google.com/?q=${encodeURIComponent(a.address)},${encodeURIComponent(a.location)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:0.75rem;color:#2563eb;text-decoration:none;padding:5px 10px;background:#dbeafe;border-radius:4px;font-weight:600;border:1px solid #93c5fd;">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Buka di Google Maps
+          </a>
+          <p style="font-size:0.7rem;color:#64748b;margin:6px 0 0;">Alamat: ${a.address}</p>
         </div>
-      `).join('')}
+
+        <!-- Tax Info -->
+        <div style="padding:10px;background:#fef9c3;border:1px solid #fde68a;border-radius:6px;margin-bottom:10px;">
+          <p style="font-size:0.68rem;font-weight:600;color:#92400e;margin:0 0 8px;text-transform:uppercase;">🏷️ Nombor Cukai</p>
+          <div style="margin-bottom:8px;">
+            <p style="font-size:0.68rem;color:#b45309;font-weight:600;margin:0;text-transform:uppercase;">Cukai Tanah (CT)</p>
+            <p style="font-size:0.8rem;font-family:monospace;color:#0c1a3d;margin:2px 0 0;font-weight:700;">${a.taxtaxNo || '—'}</p>
+          </div>
+          <div>
+            <p style="font-size:0.68rem;color:#b45309;font-weight:600;margin:0;text-transform:uppercase;">Cukai Pintu (CP)</p>
+            <p style="font-size:0.8rem;font-family:monospace;color:#0c1a3d;margin:2px 0 0;font-weight:700;">${a.doortaxNo || '—'}</p>
+          </div>
+        </div>
+
+        <!-- Tax Payment Reminder -->
+        <div style="padding:10px;background:#fee2e2;border:1px solid #fecaca;border-radius:6px;">
+          <p style="font-size:0.68rem;font-weight:600;color:#991b1b;margin:0 0 8px;text-transform:uppercase;">⏰ Bayaran Cukai</p>
+          <p style="font-size:0.82rem;color:#0f172a;margin:0;">${taxReminder()}</p>
+          <p style="font-size:0.68rem;color:#94a3b8;margin:4px 0 0;">Tarikh: ${a.taxPaymentDate?formatDate(a.taxPaymentDate):'Tidak ditetapkan'}</p>
+        </div>
+      </div>
     </div>
   `;
   document.getElementById('asset-modal').classList.add('open');
@@ -172,21 +221,21 @@ function exportAssets(fmt) { simulateExport(fmt, 'Senarai_Aset'); }
 
 function demoAssets() {
   return [
-    {id:'AST-2024-001',name:'Bangunan Pejabat Utama',type:'Office Building',ownershipType:'Freehold',location:'Kuala Lumpur',address:'No. 1, Jalan Semarak',fundSource:'Federal',status:'Active',area:'5,200 m²',value:12500000,acquiredDate:'2008-06-15',lastValuation:'2024-01-10'},
-    {id:'AST-2024-002',name:'Tanah Rizab Kerajaan',type:'Land',ownershipType:'Freehold',location:'Putrajaya',address:'PT 5678, Precinct 8',fundSource:'Federal',status:'Active',area:'12.5 acres',value:35000000,acquiredDate:'2005-03-20',lastValuation:'2023-11-15'},
-    {id:'AST-2024-003',name:'Kompleks Perumahan Pegawai',type:'Residential',ownershipType:'Strata Title',location:'Selangor',address:'Lot 112, Kota Damansara',fundSource:'State',status:'Active',area:'3,800 m²',value:8200000,acquiredDate:'2012-09-01',lastValuation:'2024-03-01'},
-    {id:'AST-2024-004',name:'Kedai Pejabat Kawasan Industri',type:'Commercial',ownershipType:'Leasehold',location:'Johor Bahru',address:'No. 88, Jalan Skudai',fundSource:'State',status:'Under Maintenance',area:'1,200 m²',value:2800000,acquiredDate:'2015-07-22',lastValuation:'2023-07-10'},
-    {id:'AST-2024-005',name:'Gudang Bekalan Strategik',type:'Industrial',ownershipType:'Leasehold',location:'Penang',address:'Lot 45, Bayan Lepas',fundSource:'Federal',status:'Active',area:'8,500 m²',value:6500000,acquiredDate:'2010-11-30',lastValuation:'2024-02-20'},
-    {id:'AST-2024-006',name:'Tanah Pertanian Hulu Langat',type:'Land',ownershipType:'Freehold',location:'Selangor',address:'Lot 788, Hulu Langat',fundSource:'State',status:'Active',area:'45.2 acres',value:15000000,acquiredDate:'2001-04-10',lastValuation:'2023-09-05'},
-    {id:'AST-2024-007',name:'Bangunan Mahkamah Daerah',type:'Office Building',ownershipType:'Freehold',location:'Kuantan',address:'Jalan Mahkamah, Kuantan',fundSource:'Federal',status:'Under Valuation',area:'2,100 m²',value:5500000,acquiredDate:'1995-12-01',lastValuation:'2021-06-30'},
-    {id:'AST-2024-008',name:'Klinik Kesihatan Komuniti',type:'Office Building',ownershipType:'Freehold',location:'Ipoh',address:'Jalan Raja Musa Aziz',fundSource:'Federal',status:'Active',area:'950 m²',value:1800000,acquiredDate:'2003-08-14',lastValuation:'2024-01-25'},
-    {id:'AST-2024-009',name:'Gerai Pasar Awam Daerah',type:'Commercial',ownershipType:'Strata Title',location:'Kota Bharu',address:'Pasar Besar Siti Khadijah',fundSource:'State',status:'Active',area:'650 m²',value:890000,acquiredDate:'2018-02-28',lastValuation:'2023-12-12'},
-    {id:'AST-2024-010',name:'Tapak Projek Perumahan PPR',type:'Land',ownershipType:'Freehold',location:'Kuala Lumpur',address:'Lot 99, Jalan Cheras',fundSource:'Federal',status:'Active',area:'3.8 acres',value:28000000,acquiredDate:'2019-06-01',lastValuation:'2024-04-01'},
-    {id:'AST-2024-011',name:'Kompleks Sukan Daerah',type:'Commercial',ownershipType:'Freehold',location:'Shah Alam',address:'Jalan Stadium, Shah Alam',fundSource:'State',status:'Under Maintenance',area:'11,000 m²',value:9800000,acquiredDate:'2000-10-05',lastValuation:'2022-10-20'},
-    {id:'AST-2024-012',name:'Bangunan Arkib Negara Cawangan',type:'Office Building',ownershipType:'Freehold',location:'Putrajaya',address:'Precinct 4, Putrajaya',fundSource:'Federal',status:'Active',area:'4,300 m²',value:11200000,acquiredDate:'2007-01-18',lastValuation:'2024-02-08'},
-    {id:'AST-2024-013',name:'Tanah Rezab Orang Asli',type:'Land',ownershipType:'Freehold',location:'Pahang',address:'Pos Iskandar, Kuala Lipis',fundSource:'Federal',status:'Active',area:'320 acres',value:4200000,acquiredDate:'1980-05-01',lastValuation:'2022-03-15'},
-    {id:'AST-2024-014',name:'Rumah Transit Pekerja Awam',type:'Residential',ownershipType:'Leasehold',location:'Kuala Lumpur',address:'Jalan Ampang, KL',fundSource:'Federal',status:'Active',area:'2,600 m²',value:7400000,acquiredDate:'2014-11-11',lastValuation:'2023-08-20'},
-    {id:'AST-2024-015',name:'Stor Peralatan JKR',type:'Industrial',ownershipType:'Freehold',location:'Seremban',address:'Jalan Besar, Seremban',fundSource:'Federal',status:'Inactive',area:'3,200 m²',value:2100000,acquiredDate:'1998-07-07',lastValuation:'2021-09-10'},
+    {id:'AST-2024-001',name:'Bangunan Pejabat Utama',type:'Office Building',ownershipType:'Freehold',location:'Kuala Lumpur',address:'No. 1, Jalan Semarak',fundSource:'Federal',status:'Active',area:'5,200 m²',value:12500000,acquiredDate:'2008-06-15',lastValuation:'2024-01-10',taxtaxNo:'CT-KL-2024-001234',doortaxNo:'CP-KL-2024-005678',taxPaymentDate:'2026-06-30'},
+    {id:'AST-2024-002',name:'Tanah Rizab Kerajaan',type:'Land',ownershipType:'Freehold',location:'Putrajaya',address:'PT 5678, Precinct 8',fundSource:'Federal',status:'Active',area:'12.5 acres',value:35000000,acquiredDate:'2005-03-20',lastValuation:'2023-11-15',taxtaxNo:'CT-PJ-2024-002456',doortaxNo:'CP-PJ-2024-007890',taxPaymentDate:'2026-08-15'},
+    {id:'AST-2024-003',name:'Kompleks Perumahan Pegawai',type:'Residential',ownershipType:'Strata Title',location:'Selangor',address:'Lot 112, Kota Damansara',fundSource:'State',status:'Active',area:'3,800 m²',value:8200000,acquiredDate:'2012-09-01',lastValuation:'2024-03-01',taxtaxNo:'CT-SLG-2024-003678',doortaxNo:'CP-SLG-2024-009012',taxPaymentDate:'2026-04-10'},
+    {id:'AST-2024-004',name:'Kedai Pejabat Kawasan Industri',type:'Commercial',ownershipType:'Leasehold',location:'Johor Bahru',address:'No. 88, Jalan Skudai',fundSource:'State',status:'Under Maintenance',area:'1,200 m²',value:2800000,acquiredDate:'2015-07-22',lastValuation:'2023-07-10',taxtaxNo:'CT-JHR-2024-004890',doortaxNo:'CP-JHR-2024-001234',taxPaymentDate:'2026-03-05'},
+    {id:'AST-2024-005',name:'Gudang Bekalan Strategik',type:'Industrial',ownershipType:'Leasehold',location:'Penang',address:'Lot 45, Bayan Lepas',fundSource:'Federal',status:'Active',area:'8,500 m²',value:6500000,acquiredDate:'2010-11-30',lastValuation:'2024-02-20',taxtaxNo:'CT-PNG-2024-005012',doortaxNo:'CP-PNG-2024-003456',taxPaymentDate:'2026-05-20'},
+    {id:'AST-2024-006',name:'Tanah Pertanian Hulu Langat',type:'Land',ownershipType:'Freehold',location:'Selangor',address:'Lot 788, Hulu Langat',fundSource:'State',status:'Active',area:'45.2 acres',value:15000000,acquiredDate:'2001-04-10',lastValuation:'2023-09-05',taxtaxNo:'CT-SLG-2024-006234',doortaxNo:'CP-SLG-2024-005678',taxPaymentDate:'2026-07-12'},
+    {id:'AST-2024-007',name:'Bangunan Mahkamah Daerah',type:'Office Building',ownershipType:'Freehold',location:'Kuantan',address:'Jalan Mahkamah, Kuantan',fundSource:'Federal',status:'Under Valuation',area:'2,100 m²',value:5500000,acquiredDate:'1995-12-01',lastValuation:'2021-06-30',taxtaxNo:'CT-PNG-2024-007456',doortaxNo:'CP-PNG-2024-007890',taxPaymentDate:'2026-02-28'},
+    {id:'AST-2024-008',name:'Klinik Kesihatan Komuniti',type:'Office Building',ownershipType:'Freehold',location:'Ipoh',address:'Jalan Raja Musa Aziz',fundSource:'Federal',status:'Active',area:'950 m²',value:1800000,acquiredDate:'2003-08-14',lastValuation:'2024-01-25',taxtaxNo:'CT-PRK-2024-008678',doortaxNo:'CP-PRK-2024-009012',taxPaymentDate:'2026-09-30'},
+    {id:'AST-2024-009',name:'Gerai Pasar Awam Daerah',type:'Commercial',ownershipType:'Strata Title',location:'Kota Bharu',address:'Pasar Besar Siti Khadijah',fundSource:'State',status:'Active',area:'650 m²',value:890000,acquiredDate:'2018-02-28',lastValuation:'2023-12-12',taxtaxNo:'CT-KTN-2024-009890',doortaxNo:'CP-KTN-2024-001234',taxPaymentDate:'2025-12-15'},
+    {id:'AST-2024-010',name:'Tapak Projek Perumahan PPR',type:'Land',ownershipType:'Freehold',location:'Kuala Lumpur',address:'Lot 99, Jalan Cheras',fundSource:'Federal',status:'Active',area:'3.8 acres',value:28000000,acquiredDate:'2019-06-01',lastValuation:'2024-04-01',taxtaxNo:'CT-KL-2024-010012',doortaxNo:'CP-KL-2024-003456',taxPaymentDate:'2026-10-20'},
+    {id:'AST-2024-011',name:'Kompleks Sukan Daerah',type:'Commercial',ownershipType:'Freehold',location:'Shah Alam',address:'Jalan Stadium, Shah Alam',fundSource:'State',status:'Under Maintenance',area:'11,000 m²',value:9800000,acquiredDate:'2000-10-05',lastValuation:'2022-10-20',taxtaxNo:'CT-SLG-2024-011234',doortaxNo:'CP-SLG-2024-007890',taxPaymentDate:'2026-04-25'},
+    {id:'AST-2024-012',name:'Bangunan Arkib Negara Cawangan',type:'Office Building',ownershipType:'Freehold',location:'Putrajaya',address:'Precinct 4, Putrajaya',fundSource:'Federal',status:'Active',area:'4,300 m²',value:11200000,acquiredDate:'2007-01-18',lastValuation:'2024-02-08',taxtaxNo:'CT-PJ-2024-012456',doortaxNo:'CP-PJ-2024-009012',taxPaymentDate:'2026-06-15'},
+    {id:'AST-2024-013',name:'Tanah Rezab Orang Asli',type:'Land',ownershipType:'Freehold',location:'Pahang',address:'Pos Iskandar, Kuala Lipis',fundSource:'Federal',status:'Active',area:'320 acres',value:4200000,acquiredDate:'1980-05-01',lastValuation:'2022-03-15',taxtaxNo:'CT-PHG-2024-013678',doortaxNo:'CP-PHG-2024-001234',taxPaymentDate:'2026-08-10'},
+    {id:'AST-2024-014',name:'Rumah Transit Pekerja Awam',type:'Residential',ownershipType:'Leasehold',location:'Kuala Lumpur',address:'Jalan Ampang, KL',fundSource:'Federal',status:'Active',area:'2,600 m²',value:7400000,acquiredDate:'2014-11-11',lastValuation:'2023-08-20',taxtaxNo:'CT-KL-2024-014890',doortaxNo:'CP-KL-2024-005678',taxPaymentDate:'2026-05-05'},
+    {id:'AST-2024-015',name:'Stor Peralatan JKR',type:'Industrial',ownershipType:'Freehold',location:'Seremban',address:'Jalan Besar, Seremban',fundSource:'Federal',status:'Inactive',area:'3,200 m²',value:2100000,acquiredDate:'1998-07-07',lastValuation:'2021-09-10',taxtaxNo:'CT-NGS-2024-015012',doortaxNo:'CP-NGS-2024-003456',taxPaymentDate:'2025-11-30'},
   ];
 }
 
