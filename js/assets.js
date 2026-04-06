@@ -50,8 +50,17 @@ function renderTable() {
   const ICONS = {'Office Building':'🏢','Land':'🌿','Residential':'🏠','Commercial':'🏪','Industrial':'🏭'};
 
   document.getElementById('assets-tbody').innerHTML = page.length === 0
-    ? `<tr><td colspan="9" style="text-align:center;padding:32px;color:#94a3b8;font-size:0.82rem;">Tiada rekod dijumpai.</td></tr>`
-    : page.map(a => `
+    ? `<tr><td colspan="11" style="text-align:center;padding:32px;color:#94a3b8;font-size:0.82rem;">Tiada rekod dijumpai.</td></tr>`
+    : page.map(a => {
+      /* Tax payment status color */
+      const paymentDate = new Date(a.taxPaymentDate || '');
+      const today = new Date();
+      const daysUntil = Math.ceil((paymentDate - today) / (1000 * 60 * 60 * 24));
+      let taxColor = '#059669', taxLabel = 'Dibayar';
+      if (daysUntil < 0) { taxColor='#dc2626'; taxLabel=`TERTUNGGAK (${Math.abs(daysUntil)}h)`; }
+      else if (daysUntil <= 30) { taxColor='#d97706'; taxLabel=`${daysUntil} hari`; }
+
+      return `
       <tr>
         <td><code style="font-size:0.72rem;background:#f1f5f9;padding:2px 7px;border-radius:4px;color:#475569;">${a.id}</code></td>
         <td class="primary" style="max-width:200px;">
@@ -60,10 +69,20 @@ function renderTable() {
         </td>
         <td style="font-size:0.82rem;">${ICONS[a.type]||'🏗'} ${a.type}</td>
         <td>${statusBadge(a.ownershipType)}</td>
-        <td style="font-size:0.82rem;color:#475569;">${a.location}</td>
+        <td>
+          <a href="https://maps.google.com/?q=${encodeURIComponent(a.address)},${encodeURIComponent(a.location)}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:#dbeafe;border:1px solid #93c5fd;border-radius:5px;text-decoration:none;color:#2563eb;font-size:0.75rem;font-weight:600;transition:all 0.2s;cursor:pointer;white-space:nowrap;" onmouseover="this.style.background='#bfdbfe'" onmouseout="this.style.background='#dbeafe'">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Peta
+          </a>
+        </td>
         <td>${statusBadge(a.fundSource)}</td>
+        <td style="font-size:0.7rem;font-family:monospace;">
+          <div style="color:#475569;margin-bottom:3px;"><strong style="color:#0f172a;">CT:</strong> ${a.taxtaxNo||'—'}</div>
+          <div style="color:#475569;"><strong style="color:#0f172a;">CP:</strong> ${a.doortaxNo||'—'}</div>
+        </td>
         <td style="text-align:right;font-weight:600;color:#0f172a;font-size:0.82rem;">RM ${a.value.toLocaleString()}</td>
         <td>${statusBadge(a.status)}</td>
+        <td style="font-size:0.72rem;font-weight:600;color:${taxColor};">${taxLabel}</td>
         <td>
           <div style="display:flex;gap:5px;">
             <button onclick="viewAsset('${a.id}')" class="btn btn-ghost btn-xs" title="Lihat butiran" style="padding:3px 7px;"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
@@ -71,7 +90,7 @@ function renderTable() {
           </div>
         </td>
       </tr>
-    `).join('');
+    `}).join('');
 
   renderPagination(total);
 }
